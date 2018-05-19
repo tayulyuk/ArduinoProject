@@ -29,6 +29,8 @@
 SoftwareSerial mySerial(2, 3); /* RX:D3, TX:D2 */
 ESP8266 wifi(mySerial);
 
+String receiveData = "";
+
 void setup(void)
 {
     Serial.begin(9600);
@@ -37,25 +39,22 @@ void setup(void)
     Serial.print("FW Version:");
     Serial.println(wifi.getVersion().c_str());
       
-    if (wifi.setOprToStationSoftAP()) {
-        Serial.print("to station + softap ok\r\n");
-    } else {
-        Serial.print("to station + softap err\r\n");
-    }
+    while(!wifi.setOprToStationSoftAP()) {
+      Serial.print("to station + softap err\r\n");        
+    } 
+    Serial.print("to station + softap ok\r\n");
  
-    if (wifi.joinAP(SSID, PASSWORD)) {
-        Serial.print("Join AP success\r\n");
-        Serial.print("IP:");
-        Serial.println( wifi.getLocalIP().c_str());       
-    } else {
-        Serial.print("Join AP failure\r\n");
-    }
+    while(!wifi.joinAP(SSID, PASSWORD)) {               
+               Serial.print("Join AP failure\r\n");
+    }        
+    Serial.print("Join AP success\r\n");
+    Serial.print("IP:");
+    Serial.println( wifi.getLocalIP().c_str());   
     
-    if (wifi.disableMUX()) {
-        Serial.print("single ok\r\n");
-    } else {
-        Serial.print("single err\r\n");
-    }
+    while(!wifi.disableMUX()) {
+      Serial.print("single err\r\n");        
+    } 
+    Serial.print("single ok\r\n");
     
     Serial.print("*** setup end *** \r\n");
 }
@@ -75,7 +74,8 @@ void loop(void)
     char *hello = value.c_str();
     //char *hello = "Hello, this is client!";
     wifi.send((const uint8_t*)hello, strlen(hello));
-    
+
+ 
     uint32_t len = wifi.recv(buffer, sizeof(buffer), 10000);
     if (len > 0) {
         Serial.print("Received:[");
@@ -84,6 +84,7 @@ void loop(void)
         }
         Serial.print("]\r\n");
     }
+
   /*
     while (!wifi.releaseTCP()) {
        Serial.print("release tcp err\r\n");       
