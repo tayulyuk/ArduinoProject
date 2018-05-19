@@ -23,16 +23,16 @@
 
 #define SSID        "KT_GiGA_2G_76C7"
 #define PASSWORD    "4jf38gf684"
-#define HOST_NAME   "http://youk123.cafe24.com"
+#define HOST_NAME   "youk123.cafe24.com"
 #define HOST_PORT   (80)
 
-SoftwareSerial mySerial(3, 2); /* RX:D3, TX:D2 */
+SoftwareSerial mySerial(2, 3); /* RX:D3, TX:D2 */
 ESP8266 wifi(mySerial);
 
 void setup(void)
 {
     Serial.begin(9600);
-    Serial.print("setup begin\r\n");
+    Serial.print("*** setup begin ***\r\n");
     
     Serial.print("FW Version:");
     Serial.println(wifi.getVersion().c_str());
@@ -57,20 +57,23 @@ void setup(void)
         Serial.print("single err\r\n");
     }
     
-    Serial.print("setup end\r\n");
+    Serial.print("*** setup end *** \r\n");
 }
  
 void loop(void)
-{
-    uint8_t buffer[128] = {0};
-    
-    if (wifi.createTCP(HOST_NAME, HOST_PORT)) {
-        Serial.print("create tcp ok\r\n");
-    } else {
-        Serial.print("create tcp err\r\n");
-    }
-    
-    char *hello = "Hello, this is client!";
+{  
+    while (!wifi.createTCP(HOST_NAME, HOST_PORT)) {
+        Serial.print("create tcp err\r\n");        
+        }       
+         Serial.print("create tcp ok\r\n");       
+         
+    uint8_t buffer[512] = {0};
+    String value = "";
+    value+= "GET /testPhp.php?orderNum=103&id=991";
+   // value+= readString;
+    value+=" HTTP/1.1\r\nHost: youk123.cafe24.com\r\nConnection: close\r\n\r\n";
+    char *hello = value.c_str();
+    //char *hello = "Hello, this is client!";
     wifi.send((const uint8_t*)hello, strlen(hello));
     
     uint32_t len = wifi.recv(buffer, sizeof(buffer), 10000);
@@ -81,12 +84,12 @@ void loop(void)
         }
         Serial.print("]\r\n");
     }
-    
-    if (wifi.releaseTCP()) {
-        Serial.print("release tcp ok\r\n");
-    } else {
-        Serial.print("release tcp err\r\n");
-    }
+  /*
+    while (!wifi.releaseTCP()) {
+       Serial.print("release tcp err\r\n");       
+    } 
+     Serial.print("release tcp ok\r\n");
+  */
     delay(5000);
 }
      

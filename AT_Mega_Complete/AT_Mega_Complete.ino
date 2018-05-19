@@ -16,6 +16,12 @@ ESP8266 wifi(Serial3,115200);
 
  //공용 ip 값 전달.
 String readString = "";
+//각각의 ip에 전달될 response
+String responseMessage = "";
+//close commend
+String closeCommand="";
+//각각의 연결 id
+int connectionId;
 
 #define DEBUG true
 
@@ -142,7 +148,7 @@ void setup(void)
     Serial.print(wifi.getIPStatus());
     
     //서버 만든다.
-    while(!wifi.startTCPServer(80))
+    while(!wifi.startTCPServer(8090))
     {
       Serial.println(" server_not_create_error");  
        delay(1000);       
@@ -157,21 +163,16 @@ void setup(void)
       //pin settings
       AllSetOutPutMode();
 
-     // AllLOWSetDigitalWrite();
-    //자동 수동을 위한 설정
-    // pinMode(53,INPUT_PULLUP);
+     // AllLOWSetDigitalWrite(); 
 }
 
 void loop() {
-  //check 수동 모드 or wifi 모드
-//if((digitalRead(53)) == 0)
-//{
  if(Serial3.available()) { // check if the esp is sending a message
     if(Serial3.find("+IPD,")) 
     {
        delay(500); // wait for the serial buffer to fill up (read all the serial data)
        // get the connection id so that we can then disconnect
-       int connectionId = Serial3.read()-48; // subtract 48 because the read() function returns 
+       connectionId = Serial3.read()-48; // subtract 48 because the read() function returns 
                                              // the ASCII decimal value and 0 (the first decimal number) starts at 48
        Serial3.find("pin="); // advance cursor to "pin="
        int pinNumber = (Serial3.read()-48)*10; // get first number i.e. if the pin 13 then the 1st number is 1, then multiply to get 10
@@ -188,20 +189,30 @@ void loop() {
       else{
         Serial.println("*** reduplication pin number *** ");
       }
-        //공통 닫기.
-       String closeCommand = "AT+CIPCLOSE="; 
-        closeCommand+=connectionId; // append connection id
-        closeCommand+="\r\n";
-        sendData(closeCommand,500,DEBUG); // close connection  
-    }
-  }
-//   Serial.println("ok");
-//}
-//else
-//{
-//  Serial.println("off");
-//}
 
+      responseMessage ="<h1>Hello World</h1>";
+      espsend(responseMessage);       
+    
+      //공통 닫기.
+      closeCommand = "AT+CIPCLOSE="; 
+      closeCommand+=connectionId; // append connection id
+      closeCommand+="\r\n";
+      sendData(closeCommand,500,DEBUG); // close connection        
+    }           
+  }
+}
+
+  //////////////////////////////sends data from ESP to webpage///////////////////////////
+ 
+ void espsend(String d)
+{
+String cipSend = " AT+CIPSEND=";
+cipSend += connectionId; 
+cipSend += ",";
+cipSend +=d.length();
+cipSend +="\r\n";
+sendData(cipSend,1000,DEBUG);
+sendData(d,1000,DEBUG); 
 }
 
 /*
