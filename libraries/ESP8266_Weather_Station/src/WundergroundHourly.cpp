@@ -1,6 +1,6 @@
 /**The MIT License (MIT)
 
-Copyright (c) 2015 by Daniel Eichhorn
+Copyright (c) 2018 by Daniel Eichhorn, ThingPulse
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-See more at http://blog.squix.ch
+See more at https://thingpulse.com
 */
 
-#include <ESP8266WiFi.h>
+#include <ESPWiFi.h>
 #include <WiFiClient.h>
-#include <ESP8266HTTPClient.h>
+#include <ESPHTTPClient.h>
 #include "WundergroundHourly.h"
 
 WundergroundHourly::WundergroundHourly(boolean _isMetric, boolean _is24Hours) {
@@ -55,6 +55,7 @@ void WundergroundHourly::updateHourlyZMW(WGHourly *hourlies, String apiKey, Stri
 
 void WundergroundHourly::doUpdate(WGHourly *hourlies, String url) {
   this->hourlies = hourlies;
+  hoursParsed = 0;
   JsonStreamingParser parser;
   parser.setListener(this);
 
@@ -69,9 +70,6 @@ void WundergroundHourly::doUpdate(WGHourly *hourlies, String url) {
   int httpCode = http.GET();
   Serial.printf("[HTTP] GET... code: %d\n", httpCode);
   if(httpCode > 0) {
-
-
-
     WiFiClient * client = http.getStreamPtr();
 
     while(client->connected()) {
@@ -106,34 +104,37 @@ void WundergroundHourly::key(String key) {
 void WundergroundHourly::value(String value) {
   if (currentKey == "hour") {
     currentHour = value.toInt();
+    hoursParsed++;
   }
 
-  if (is24Hours && currentKey == "hour_padded") {
-    hourlies[currentHour].hour = value + ":00";
-  }
-  if (!is24Hours && currentKey == "civil") {
-    hourlies[currentHour].hour = value;
-  }
+  // parse only first 24 hours sent in reply (WU sends 36 hours)
+  if(hoursParsed <= 24) {
+    if (is24Hours && currentKey == "hour_padded") {
+      hourlies[currentHour].hour = value + ":00";
+    }
+    if (!is24Hours && currentKey == "civil") {
+      hourlies[currentHour].hour = value;
+    }
 
-  if (currentKey == "icon") {
-    hourlies[currentHour].icon = value;
-  }
-  if (currentKey == "condition") {
-    hourlies[currentHour].title = value;
-  }
+    if (currentKey == "icon") {
+      hourlies[currentHour].icon = value;
+    }
+    if (currentKey == "condition") {
+      hourlies[currentHour].title = value;
+    }
 
 
-  if (currentParent == "temp" && currentKey == "english" && !isMetric) {
-    hourlies[currentHour].temp = value;
-  }
-  if (currentParent == "temp" && currentKey == "metric" && isMetric) {
-    hourlies[currentHour].temp = value;
-  }
+    if (currentParent == "temp" && currentKey == "english" && !isMetric) {
+      hourlies[currentHour].temp = value;
+    }
+    if (currentParent == "temp" && currentKey == "metric" && isMetric) {
+      hourlies[currentHour].temp = value;
+    }
 
-  if (currentKey == "pop") {
-      hourlies[currentHour].PoP = value;
+    if (currentKey == "pop") {
+        hourlies[currentHour].PoP = value;
+    }
   }
-
 }
 
 void WundergroundHourly::endArray() {

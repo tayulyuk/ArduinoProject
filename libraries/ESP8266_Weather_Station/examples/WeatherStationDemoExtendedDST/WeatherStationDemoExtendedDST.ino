@@ -1,6 +1,6 @@
 /**The MIT License (MIT)
 
-Copyright (c) 2016 by Daniel Eichhorn
+Copyright (c) 2018 by Daniel Eichhorn - ThingPulse
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-See more at http://blog.squix.ch
+See more at https://thingpulse.com
 */
 
 /* Customizations by Neptune (NeptuneEng on Twitter, Neptune2 on Github)
- *  
+ *
  *  Added Wifi Splash screen and credit to Squix78
  *  Modified progress bar to a thicker and symmetrical shape
  *  Replaced TimeClient with built-in lwip sntp client (no need for external ntp client library)
@@ -42,7 +42,8 @@ See more at http://blog.squix.ch
  *  Slight adjustment to overlay
  */
 
-#include <ESP8266WiFi.h>
+#include <ESPWiFi.h>
+#include <ESPHTTPClient.h>
 #include <Ticker.h>
 #include "settings.h"
 #include <JsonListener.h>
@@ -52,6 +53,7 @@ See more at http://blog.squix.ch
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
+#include <Adafruit_Sensor.h>
 
 #include "WundergroundClient.h"
 #include "WeatherStationFonts.h"
@@ -115,7 +117,7 @@ void setup() {
   display.init();
   display.clear();
   display.display();
-  
+
   display.flipScreenVertically();  // Comment out to flip display 180deg
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_CENTER);
@@ -129,7 +131,7 @@ void setup() {
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
-  
+
   // Uncomment for testing wifi manager
   // wifiManager.resetSettings();
   wifiManager.setAPCallback(configModeCallback);
@@ -160,7 +162,7 @@ void setup() {
 
   ui.setTargetFPS(30);
   ui.setTimePerFrame(10*1000); // Setup frame display time to 10 sec
-  
+
   //Hack until disableIndicator works:
   //Set an empty symbol
   ui.setActiveSymbol(emptySymbol);
@@ -196,7 +198,7 @@ void loop() {
 
   if (readyForDHTUpdate && ui.getUiState()->frameState == FIXED)
     updateDHT();
-    
+
   int remainingTimeBudget = ui.update();
 
   if (remainingTimeBudget > 0) {
@@ -255,7 +257,7 @@ void updateData(OLEDDisplay *display) {
   drawProgress(display, 80, "Updating DHT Sensor");
   temperature = dht.readTemperature(!IS_METRIC);
   delay(500);
-  
+
   drawProgress(display, 90, "Updating thingspeak...");
   thingspeak.getLastChannelItem(THINGSPEAK_CHANNEL_ID, THINGSPEAK_API_READ_KEY);
   readyForWeatherUpdate = false;
@@ -276,7 +278,7 @@ void drawDateTime(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, in
   char time_str[11];
   time_t now = dstAdjusted.time(&dstAbbrev);
   struct tm * timeinfo = localtime (&now);
-  
+
   display->setTextAlignment(TEXT_ALIGN_CENTER);
   display->setFont(ArialMT_Plain_10);
   String date = ctime(&now);
@@ -285,7 +287,7 @@ void drawDateTime(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, in
   display->drawString(64 + x, 5 + y, date);
   display->setFont(DSEG7_Classic_Bold_21);
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
-  
+
 #ifdef STYLE_24HR
   sprintf(time_str, "%02d:%02d:%02d\n",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
   display->drawString(108 + x, 19 + y, time_str);
@@ -314,7 +316,7 @@ void drawCurrentWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t
 
   display->setFont(ArialMT_Plain_24);
   String temp = wunderground.getCurrentTemp() + (IS_METRIC ? "°C": "°F");
-  
+
   display->drawString(60 + x, 15 + y, temp);
   int tempWidth = display->getStringWidth(temp);
 

@@ -1,6 +1,6 @@
 /**The MIT License (MIT)
 
-Copyright (c) 2015 by Daniel Eichhorn
+Copyright (c) 2018 by Daniel Eichhorn, ThingPulse
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-See more at http://blog.squix.ch
+See more at https://thingpulse.com
 */
 
-#include <ESP8266WiFi.h>
+#include <ESPWiFi.h>
 #include <WiFiClient.h>
-#include <ESP8266HTTPClient.h>
+#include <ESPHTTPClient.h>
 #include "WundergroundConditions.h"
 
 WundergroundConditions::WundergroundConditions(boolean _isMetric) {
@@ -51,6 +51,9 @@ void WundergroundConditions::updateConditionsPWS(WGConditions *conditions, Strin
 }
 
 void WundergroundConditions::doUpdate(WGConditions *conditions, String url) {
+  unsigned long lostTest = 10000UL;
+  unsigned long lost_do = millis();
+
   this->conditions = conditions;
   JsonStreamingParser parser;
   parser.setListener(this);
@@ -67,12 +70,15 @@ void WundergroundConditions::doUpdate(WGConditions *conditions, String url) {
   Serial.printf("[HTTP] GET... code: %d\n", httpCode);
   if(httpCode > 0) {
 
-
-
     WiFiClient * client = http.getStreamPtr();
 
     while(client->connected()) {
       while((size = client->available()) > 0) {
+		if ((millis() - lost_do) > lostTest) {
+			Serial.println ("lost in client with a timeout");
+			client->stop();
+			ESP.restart();
+	    }
         c = client->read();
         if (c == '{' || c == '[') {
 
@@ -132,9 +138,17 @@ void WundergroundConditions::value(String value) {
   if (currentKey == "temp_c" && isMetric) {
     conditions->currentTemp = value;
   }
+#ifdef NIGHTICONS
+  if (currentKey == "icon_url") { //"icon_url":"http://icons.wxug.com/i/c/k/nt_clear.gif"
+    int b1 = value.lastIndexOf('/') + 1;
+    int b2 = value.lastIndexOf('.');
+    conditions->weatherIcon = value.substring(b1, b2); //clear the begining and get from nt_ ... for night
+  }
+#else
   if (currentKey == "icon") {
     conditions->weatherIcon = value;
   }
+#endif
   if (currentKey == "weather") {
     conditions->weatherText = value;
   }

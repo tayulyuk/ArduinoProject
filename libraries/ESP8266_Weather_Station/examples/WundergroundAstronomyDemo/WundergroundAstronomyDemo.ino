@@ -1,6 +1,6 @@
 /**The MIT License (MIT)
 
-Copyright (c) 2017 by Daniel Eichhorn
+Copyright (c) 2018 by Daniel Eichhorn - ThingPulse
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-See more at https://blog.squix.org
+See more at https://thingpulse.com
 */
 
 #include <Arduino.h>
@@ -35,7 +35,7 @@ See more at https://blog.squix.org
 const String  WUNDERGRROUND_API_KEY = "<Wunderground-KEY>";
 const String  WUNDERGR_UND_STATE_OR_COUNTRY = "CH";
 const String  WUNDERGR_UND_CITY = "ZURICH";
-const String  WUNDERGRROUND_LANGUAGE = "EN";
+const String  WUNDERGRROUND_LANGUAGE = "EN"; // as per https://www.wunderground.com/weather/api/d/docs?d=resources/country-to-iso-matching
 const boolean USE_PM = false;
 
 // initiate the WundergoundClient

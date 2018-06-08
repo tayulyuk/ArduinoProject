@@ -8,13 +8,14 @@
 #define WIFI_AP "KT_GiGA_2G_76C7"
 #define WIFI_PASSWORD "4jf38gf684"
 
-#define TOKEN "ARDUINO_DEMO_TOKEN"
+#define TOKEN "xV0RT5aiD6uDN8EdE3mI"
 
 // DHT
 #define DHTPIN 4
 #define DHTTYPE DHT22
 
-char thingsboardServer[] = "YOUR_THINGSBOARD_HOST_OR_IP";
+//char thingsboardServer[] = "14.63.171.33";
+char thingsboardServer[] = "demo.thingsboard.io";
 
 // Initialize the Ethernet client object
 WiFiEspClient espClient;
@@ -24,7 +25,7 @@ DHT dht(DHTPIN, DHTTYPE);
 
 PubSubClient client(espClient);
 
-SoftwareSerial soft(2, 3); // RX, TX
+SoftwareSerial soft(3,2); // RX, TX
 
 int status = WL_IDLE_STATUS;
 unsigned long lastSend;
@@ -32,6 +33,7 @@ unsigned long lastSend;
 void setup() {
   // initialize serial for debugging
   Serial.begin(9600);
+  soft.begin(9600);
   dht.begin();
   InitWiFi();
   client.setServer( thingsboardServer, 1883 );

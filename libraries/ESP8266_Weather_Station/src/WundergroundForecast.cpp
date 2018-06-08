@@ -1,6 +1,6 @@
 /**The MIT License (MIT)
 
-Copyright (c) 2015 by Daniel Eichhorn
+Copyright (c) 2018 by Daniel Eichhorn, ThingPulse
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-See more at http://blog.squix.ch
+See more at https://thingpulse.com
 */
 
-#include <ESP8266WiFi.h>
+#include <ESPWiFi.h>
 #include <WiFiClient.h>
-#include <ESP8266HTTPClient.h>
+#include <ESPHTTPClient.h>
 #include "WundergroundForecast.h"
 
 WundergroundForecast::WundergroundForecast(boolean _isMetric) {
@@ -50,6 +50,9 @@ void WundergroundForecast::updateForecastZMW(WGForecast *forecasts, uint8_t maxF
 }
 
 void WundergroundForecast::doUpdate(WGForecast *forecasts, uint8_t maxForecasts, String url) {
+  unsigned long lostTest = 10000UL;
+  unsigned long lost_do = millis();
+
   this->forecasts = forecasts;
   this->maxForecasts = maxForecasts;
   JsonStreamingParser parser;
@@ -73,7 +76,12 @@ void WundergroundForecast::doUpdate(WGForecast *forecasts, uint8_t maxForecasts,
 
     while(client->connected()) {
       while((size = client->available()) > 0) {
-        c = client->read();
+		if ((millis() - lost_do) > lostTest) {
+			Serial.println ("lost in client with a timeout");
+			client->stop();
+			ESP.restart();
+		}
+        c = client->read(); //stream.setTimeout(time=1000) returns -1
         if (c == '{' || c == '[') {
 
           isBody = true;
@@ -112,10 +120,15 @@ void WundergroundForecast::value(String value) {
   if (currentKey == "period") {
     currentForecastPeriod = value.toInt();
   }
-
-  if (currentKey == "icon" && currentForecastPeriod < maxForecasts) {
+#ifdef NIGHTICONS
+  if (currentKey == "icon" && !isSimpleForecast && currentForecastPeriod < maxForecasts) {
     forecasts[currentForecastPeriod].forecastIcon = value;
   }
+#else
+  if (currentKey == "icon" && isSimpleForecast && currentForecastPeriod < maxForecasts) {
+    forecasts[currentForecastPeriod].forecastIcon = value;
+  }
+#endif
   if (currentKey == "title" && currentForecastPeriod < maxForecasts) {
       Serial.println(String(currentForecastPeriod) + ": " + value);
       forecasts[currentForecastPeriod].forecastTitle = value;
@@ -131,7 +144,7 @@ void WundergroundForecast::value(String value) {
   }
 
   // Added PoP (probability of precipitation) key following...fowlerk, 12/22/16
-  if (currentKey == "pop" && currentForecastPeriod < maxForecasts) {
+  if (currentKey == "pop" && !isSimpleForecast && currentForecastPeriod < maxForecasts) {
       forecasts[currentForecastPeriod].PoP = value;
   }
 

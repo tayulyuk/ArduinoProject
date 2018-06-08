@@ -1,6 +1,6 @@
 /**The MIT License (MIT)
 
-Copyright (c) 2017 by Daniel Eichhorn
+Copyright (c) 2018 by Daniel Eichhorn - ThingPulse
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-See more at https://blog.squix.org
+See more at https://thingpulse.com
 */
 
 #include <Arduino.h>
@@ -39,7 +39,7 @@ const boolean USE_PM = false;
 // 		http://api.wunderground.com/api/<API-KEY>/conditions/q/<COUNTRY-CODE>/<CITY-NAME>.json
 // for example and grab for the zmw ...
 const String  WUNDERGROUND_ZMW_CODE = "00000.215.10348"; // Braunschweig-Flughafen -> EDVE
-const String  WUNDERGRROUND_LANGUAGE = "DE";
+const String  WUNDERGRROUND_LANGUAGE = "DL"; // as per https://www.wunderground.com/weather/api/d/docs?d=resources/country-to-iso-matching
 
 // initiate the WundergoundClient
 WundergroundConditions wunderground(IS_METRIC);

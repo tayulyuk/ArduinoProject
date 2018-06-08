@@ -1,6 +1,6 @@
 /**The MIT License (MIT)
 
-Copyright (c) 2015 by Daniel Eichhorn
+Copyright (c) 2018 by Daniel Eichhorn, ThingPulse
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-See more at http://blog.squix.ch
+See more at https://thingpulse.com
 */
 
 #pragma once
@@ -41,6 +41,8 @@ class WundergroundClient: public JsonListener {
     int gmtOffset = 1;
     long localMillisAtUpdate;
     String date = "-";
+	String localTime = "-";
+	String utcOffset = "-";
     String observationDate = "-";
     boolean isMetric = true;
     String currentTemp;
@@ -118,6 +120,8 @@ class WundergroundClient: public JsonListener {
     String getMinutes();
     String getSeconds();
     String getDate();
+	String getLocalTime();
+	String getUtcOffset();
     String getObservationDate();
     // JJG added ... ///////////////////function name to string ////////////////////////////
     String getMoonPctIlum();

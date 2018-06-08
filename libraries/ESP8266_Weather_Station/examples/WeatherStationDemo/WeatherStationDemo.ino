@@ -1,6 +1,6 @@
 /**The MIT License (MIT)
 
-Copyright (c) 2016 by Daniel Eichhorn
+Copyright (c) 2018 by Daniel Eichhorn - ThingPulse
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,20 +20,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-See more at http://blog.squix.ch
+See more at https://thingpulse.com
 */
 
-#include <ESP8266WiFi.h>
-#include <Ticker.h>
+#include <ESPWiFi.h>
+#include <ESPHTTPClient.h>
 #include <JsonListener.h>
+
+// time
+#include <time.h>                       // time() ctime()
+#include <sys/time.h>                   // struct timeval
+#include <coredecls.h>                  // settimeofday_cb()
+
 #include "SSD1306Wire.h"
 #include "OLEDDisplayUi.h"
 #include "Wire.h"
-#include "WundergroundClient.h"
+#include "OpenWeatherMapCurrent.h"
+#include "OpenWeatherMapForecast.h"
 #include "WeatherStationFonts.h"
 #include "WeatherStationImages.h"
-#include "TimeClient.h"
-#include "ThingspeakClient.h"
+
 
 /***************************
  * Begin Settings
@@ -45,51 +51,71 @@ See more at http://blog.squix.ch
 const char* WIFI_SSID = "yourssid";
 const char* WIFI_PWD = "yourpassw0rd";
 
+#define TZ              2       // (utc+) TZ in hours
+#define DST_MN          60      // use 60mn for summer time in some countries
 
 // Setup
-const int UPDATE_INTERVAL_SECS = 10 * 60; // Update every 10 minutes
+const int UPDATE_INTERVAL_SECS = 20 * 60; // Update every 20 minutes
 
 // Display Settings
 const int I2C_DISPLAY_ADDRESS = 0x3c;
+#if defined(ESP8266)
 const int SDA_PIN = D3;
 const int SDC_PIN = D4;
+#else
+const int SDA_PIN = 5; //D3;
+const int SDC_PIN = 4; //D4;
+#endif
 
-// TimeClient settings
-const float UTC_OFFSET = 2;
 
-// Wunderground Settings
+// OpenWeatherMap Settings
+// Sign up here to get an API key:
+// https://home.openweathermap.org/users/sign_up
 const boolean IS_METRIC = true;
-const String WUNDERGRROUND_API_KEY = "WUNDERGROUND_API_KEY";
-const String WUNDERGRROUND_LANGUAGE = "DL";
-const String WUNDERGROUND_COUNTRY = "CH";
-const String WUNDERGROUND_CITY = "Zurich";
+String OPEN_WEATHER_MAP_APP_ID = "XXX";
+String OPEN_WEATHER_MAP_LOCATION = "Zurich,CH";
 
-//Thingspeak Settings
-const String THINGSPEAK_CHANNEL_ID = "67284";
-const String THINGSPEAK_API_READ_KEY = "L2VIW20QVNZJBLAK";
+// Pick a language code from this list:
+// Arabic - ar, Bulgarian - bg, Catalan - ca, Czech - cz, German - de, Greek - el,
+// English - en, Persian (Farsi) - fa, Finnish - fi, French - fr, Galician - gl,
+// Croatian - hr, Hungarian - hu, Italian - it, Japanese - ja, Korean - kr,
+// Latvian - la, Lithuanian - lt, Macedonian - mk, Dutch - nl, Polish - pl,
+// Portuguese - pt, Romanian - ro, Russian - ru, Swedish - se, Slovak - sk,
+// Slovenian - sl, Spanish - es, Turkish - tr, Ukrainian - ua, Vietnamese - vi,
+// Chinese Simplified - zh_cn, Chinese Traditional - zh_tw.
 
-// Initialize the oled display for address 0x3c
-// sda-pin=14 and sdc-pin=12
-SSD1306Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SDC_PIN);
-OLEDDisplayUi   ui( &display );
+String OPEN_WEATHER_MAP_LANGUAGE = "de";
+const uint8_t MAX_FORECASTS = 4;
+
+// Adjust according to your language
+const String WDAY_NAMES[] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
+const String MONTH_NAMES[] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
 
 /***************************
  * End Settings
  **************************/
+ // Initialize the oled display for address 0x3c
+ // sda-pin=14 and sdc-pin=12
+ SSD1306Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SDC_PIN);
+ OLEDDisplayUi   ui( &display );
 
-TimeClient timeClient(UTC_OFFSET);
+OpenWeatherMapCurrentData currentWeather;
+OpenWeatherMapCurrent currentWeatherClient;
 
-// Set to false, if you prefere imperial/inches, Fahrenheit
-WundergroundClient wunderground(IS_METRIC);
+OpenWeatherMapForecastData forecasts[MAX_FORECASTS];
+OpenWeatherMapForecast forecastClient;
 
-ThingspeakClient thingspeak;
+#define TZ_MN           ((TZ)*60)
+#define TZ_SEC          ((TZ)*3600)
+#define DST_SEC         ((DST_MN)*60)
+time_t now;
 
 // flag changed in the ticker function every 10 minutes
 bool readyForWeatherUpdate = false;
 
 String lastUpdate = "--";
 
-Ticker ticker;
+long timeSinceLastWUpdate = 0;
 
 //declaring prototypes
 void drawProgress(OLEDDisplay *display, int percentage, String label);
@@ -97,7 +123,6 @@ void updateData(OLEDDisplay *display);
 void drawDateTime(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawCurrentWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawForecast(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
-void drawThingspeak(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawForecastDetails(OLEDDisplay *display, int x, int y, int dayIndex);
 void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 void setReadyForWeatherUpdate();
@@ -106,8 +131,8 @@ void setReadyForWeatherUpdate();
 // Add frames
 // this array keeps function pointers to all frames
 // frames are the single views that slide from right to left
-FrameCallback frames[] = { drawDateTime, drawCurrentWeather, drawForecast, drawThingspeak };
-int numberOfFrames = 4;
+FrameCallback frames[] = { drawDateTime, drawCurrentWeather, drawForecast };
+int numberOfFrames = 3;
 
 OverlayCallback overlays[] = { drawHeaderOverlay };
 int numberOfOverlays = 1;
@@ -142,6 +167,8 @@ void setup() {
 
     counter++;
   }
+  // Get time from network time service
+  configTime(TZ_SEC, DST_SEC, "pool.ntp.org");
 
   ui.setTargetFPS(30);
 
@@ -170,11 +197,14 @@ void setup() {
 
   updateData(&display);
 
-  ticker.attach(UPDATE_INTERVAL_SECS, setReadyForWeatherUpdate);
-
 }
 
 void loop() {
+
+  if (millis() - timeSinceLastWUpdate > (1000L*UPDATE_INTERVAL_SECS)) {
+    setReadyForWeatherUpdate();
+    timeSinceLastWUpdate = millis();
+  }
 
   if (readyForWeatherUpdate && ui.getUiState()->frameState == FIXED) {
     updateData(&display);
@@ -203,14 +233,17 @@ void drawProgress(OLEDDisplay *display, int percentage, String label) {
 
 void updateData(OLEDDisplay *display) {
   drawProgress(display, 10, "Updating time...");
-  timeClient.updateTime();
-  drawProgress(display, 30, "Updating conditions...");
-  wunderground.updateConditions(WUNDERGRROUND_API_KEY, WUNDERGRROUND_LANGUAGE, WUNDERGROUND_COUNTRY, WUNDERGROUND_CITY);
+  drawProgress(display, 30, "Updating weather...");
+  currentWeatherClient.setMetric(IS_METRIC);
+  currentWeatherClient.setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
+  currentWeatherClient.updateCurrent(&currentWeather, OPEN_WEATHER_MAP_APP_ID, OPEN_WEATHER_MAP_LOCATION);
   drawProgress(display, 50, "Updating forecasts...");
-  wunderground.updateForecast(WUNDERGRROUND_API_KEY, WUNDERGRROUND_LANGUAGE, WUNDERGROUND_COUNTRY, WUNDERGROUND_CITY);
-  drawProgress(display, 80, "Updating thingspeak...");
-  thingspeak.getLastChannelItem(THINGSPEAK_CHANNEL_ID, THINGSPEAK_API_READ_KEY);
-  lastUpdate = timeClient.getFormattedTime();
+  forecastClient.setMetric(IS_METRIC);
+  forecastClient.setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
+  uint8_t allowedHours[] = {12};
+  forecastClient.setAllowedHours(allowedHours, sizeof(allowedHours));
+  forecastClient.updateForecasts(forecasts, OPEN_WEATHER_MAP_APP_ID, OPEN_WEATHER_MAP_LOCATION, MAX_FORECASTS);
+
   readyForWeatherUpdate = false;
   drawProgress(display, 100, "Done...");
   delay(1000);
@@ -219,73 +252,76 @@ void updateData(OLEDDisplay *display) {
 
 
 void drawDateTime(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+  now = time(nullptr);
+  struct tm* timeInfo;
+  timeInfo = localtime(&now);
+  char buff[16];
+
+
   display->setTextAlignment(TEXT_ALIGN_CENTER);
   display->setFont(ArialMT_Plain_10);
-  String date = wunderground.getDate();
-  int textWidth = display->getStringWidth(date);
-  display->drawString(64 + x, 5 + y, date);
+  String date = WDAY_NAMES[timeInfo->tm_wday];
+
+  sprintf_P(buff, PSTR("%s, %02d/%02d/%04d"), WDAY_NAMES[timeInfo->tm_wday].c_str(), timeInfo->tm_mday, timeInfo->tm_mon+1, timeInfo->tm_year + 1900);
+  display->drawString(64 + x, 5 + y, String(buff));
   display->setFont(ArialMT_Plain_24);
-  String time = timeClient.getFormattedTime();
-  textWidth = display->getStringWidth(time);
-  display->drawString(64 + x, 15 + y, time);
+
+  sprintf_P(buff, PSTR("%02d:%02d:%02d"), timeInfo->tm_hour, timeInfo->tm_min, timeInfo->tm_sec);
+  display->drawString(64 + x, 15 + y, String(buff));
   display->setTextAlignment(TEXT_ALIGN_LEFT);
 }
 
 void drawCurrentWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   display->setFont(ArialMT_Plain_10);
-  display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->drawString(60 + x, 5 + y, wunderground.getWeatherText());
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  display->drawString(64 + x, 38 + y, currentWeather.description);
 
   display->setFont(ArialMT_Plain_24);
-  String temp = wunderground.getCurrentTemp() + "°C";
-  display->drawString(60 + x, 15 + y, temp);
-  int tempWidth = display->getStringWidth(temp);
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  String temp = String(currentWeather.temp, 1) + (IS_METRIC ? "°C" : "°F");
+  display->drawString(60 + x, 5 + y, temp);
 
-  display->setFont(Meteocons_Plain_42);
-  String weatherIcon = wunderground.getTodayIcon();
-  int weatherIconWidth = display->getStringWidth(weatherIcon);
-  display->drawString(32 + x - weatherIconWidth / 2, 05 + y, weatherIcon);
+  display->setFont(Meteocons_Plain_36);
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  display->drawString(32 + x, 0 + y, currentWeather.iconMeteoCon);
 }
 
 
 void drawForecast(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   drawForecastDetails(display, x, y, 0);
-  drawForecastDetails(display, x + 44, y, 2);
-  drawForecastDetails(display, x + 88, y, 4);
-}
-
-void drawThingspeak(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
-  display->setTextAlignment(TEXT_ALIGN_CENTER);
-  display->setFont(ArialMT_Plain_10);
-  display->drawString(64 + x, 0 + y, "Outdoor");
-  display->setFont(ArialMT_Plain_16);
-  display->drawString(64 + x, 10 + y, thingspeak.getFieldValue(0) + "°C");
-  display->drawString(64 + x, 30 + y, thingspeak.getFieldValue(1) + "%");
+  drawForecastDetails(display, x + 44, y, 1);
+  drawForecastDetails(display, x + 88, y, 2);
 }
 
 void drawForecastDetails(OLEDDisplay *display, int x, int y, int dayIndex) {
+  time_t observationTimestamp = forecasts[dayIndex].observationTime;
+  struct tm* timeInfo;
+  timeInfo = localtime(&observationTimestamp);
   display->setTextAlignment(TEXT_ALIGN_CENTER);
   display->setFont(ArialMT_Plain_10);
-  String day = wunderground.getForecastTitle(dayIndex).substring(0, 3);
-  day.toUpperCase();
-  display->drawString(x + 20, y, day);
+  display->drawString(x + 20, y, WDAY_NAMES[timeInfo->tm_wday]);
 
   display->setFont(Meteocons_Plain_21);
-  display->drawString(x + 20, y + 12, wunderground.getForecastIcon(dayIndex));
-
+  display->drawString(x + 20, y + 12, forecasts[dayIndex].iconMeteoCon);
+  String temp = String(forecasts[dayIndex].temp, 0) + (IS_METRIC ? "°C" : "°F");
   display->setFont(ArialMT_Plain_10);
-  display->drawString(x + 20, y + 34, wunderground.getForecastLowTemp(dayIndex) + "|" + wunderground.getForecastHighTemp(dayIndex));
+  display->drawString(x + 20, y + 34, temp);
   display->setTextAlignment(TEXT_ALIGN_LEFT);
 }
 
 void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
+  now = time(nullptr);
+  struct tm* timeInfo;
+  timeInfo = localtime(&now);
+  char buff[14];
+  sprintf_P(buff, PSTR("%02d:%02d"), timeInfo->tm_hour, timeInfo->tm_min);
+
   display->setColor(WHITE);
   display->setFont(ArialMT_Plain_10);
-  String time = timeClient.getFormattedTime().substring(0, 5);
   display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->drawString(0, 54, time);
+  display->drawString(0, 54, String(buff));
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
-  String temp = wunderground.getCurrentTemp() + "°C";
+  String temp = String(currentWeather.temp, 1) + (IS_METRIC ? "°C" : "°F");
   display->drawString(128, 54, temp);
   display->drawHorizontalLine(0, 52, 128);
 }

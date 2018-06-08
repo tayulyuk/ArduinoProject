@@ -1,6 +1,6 @@
 /**The MIT License (MIT)
 
-Copyright (c) 2016 by Daniel Eichhorn
+Copyright (c) 2018 by Daniel Eichhorn - ThingPulse
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-See more at http://blog.squix.ch
+See more at https://thingpulse.com
 */
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
+#include <ESPWiFi.h>
+#include <ESPHTTPClient.h>
 #include <Ticker.h>
 #include <JsonListener.h>
 #include <ArduinoOTA.h>
@@ -44,7 +45,7 @@ See more at http://blog.squix.ch
 
 /**************
  * Required Libraries:
- * - Weather Station by Daniel Eichhorn 
+ * - Weather Station by Daniel Eichhorn
  * - WifiManager by tzapu
  * - ESP8266 OLED Driver by Daniel Eichhorn, Fabrice Weinberg
  * - Json Streaming Parser by Daniel Eichhorn
