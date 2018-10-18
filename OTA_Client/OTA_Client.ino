@@ -12,7 +12,8 @@ int t,h;
 String url="";
 
 #define DHTPIN D2
-#define DHTTYPE DHT22
+//#define DHTTYPE DHT22
+#define DHTTYPE DHT21
  
 DHT dht(DHTPIN, DHTTYPE);
 WiFiClient client;
@@ -62,10 +63,10 @@ void loop()
   }
   Serial.println("temp call"); 
   url ="/tempAndHumi.jsp?";
-   url +="temp2="; 
+   url +="temp1="; 
   url+=String(t);
   url+="&";
-  url+="humi2=";
+  url+="humi1=";
   url+=String(h);
   
   Serial.println(url);

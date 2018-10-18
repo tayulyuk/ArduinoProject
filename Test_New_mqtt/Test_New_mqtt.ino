@@ -5,7 +5,7 @@
 #include <PubSubClient.h>
 #include <SPI.h>
 
-IPAddress server(14,63,171,33);
+IPAddress server(119.205.235.214);
 char ssid[] = "KT_GiGA_2G_76C7";           // your network SSID (name)
 char pass[] = "4jf38gf684";           // your network password
 int status = WL_IDLE_STATUS; // the Wifi radio's status
