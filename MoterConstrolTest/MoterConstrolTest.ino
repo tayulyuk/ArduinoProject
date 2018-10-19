@@ -2,8 +2,10 @@
 #include <PubSubClient.h>
 
 // 아래의 6개설정은 사용자 환경에 맞게 수정하세요.
-const char* ssid = "KT_GiGA_2G_76C7"; // 와이파이 AP, 또는 스마트폰의 핫스판 이름
-const char* password = "4jf38gf684";  // 와이파이 AP, 또는 스마트폰의 핫스판 이름
+//const char* ssid = "KT_GiGA_2G_76C7"; // 와이파이 AP, 또는 스마트폰의 핫스판 이름
+//const char* password = "4jf38gf684";  // 와이파이 AP, 또는 스마트폰의 핫스판 이름
+const char* ssid = "YoukLeeIpTimeA1004"; // 와이파이 AP, 또는 스마트폰의 핫스판 이름
+const char* password = "123456789000";  // 와이파이 AP, 또는 스마트폰의 핫스판 이름
 const char* mqtt_server = "119.205.235.214"; //브로커 주소
 const char* outTopic = "/ggg/inTopic"; // 이름이 중복되지 않게 설정 기록
 const char* inTopic = "/ggg/outTopic"; // 이름이 중복되지 않게 설정 기록
