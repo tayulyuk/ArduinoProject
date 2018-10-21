@@ -14,8 +14,8 @@
 #define DHTPIN 4
 #define DHTTYPE DHT22
 
-char thingsboardServer[] = "221.143.21.107";
-//char thingsboardServer[] = "demo.thingsboard.io";
+//char thingsboardServer[] = "221.143.21.107";
+char thingsboardServer[] = "demo.thingsboard.io";
 
 // Initialize the Ethernet client object
 WiFiEspClient espClient;

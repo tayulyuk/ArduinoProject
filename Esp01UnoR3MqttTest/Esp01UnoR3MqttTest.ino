@@ -5,16 +5,18 @@
 #include <PubSubClient.h>
 
 IPAddress server(119,205,235,214);
+//const char * server = "119.205.235.214"; 
 char ssid[] = "KT_GiGA_2G_76C7";           // your network SSID (name)
 char pass[] = "4jf38gf684";           // your network password
 int status = WL_IDLE_STATUS;   // the Wifi radio's status
-
+char* topic ="ggg";
+char* inTopic ="inggg";
 // Initialize the Ethernet client object
 WiFiEspClient espClient;
 
 PubSubClient client(espClient);
 
-SoftwareSerial soft(2,3); // RX, TX
+SoftwareSerial soft(3,2); // RX, TX
 void setup() {
   // initialize serial for debugging
   Serial.begin(9600);
@@ -55,6 +57,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.print((char)payload[i]);
   }
   Serial.println();
+  
+  
 }
 
 void loop() {
@@ -73,9 +77,9 @@ void reconnect() {
     if (client.connect("arduinoClient")) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish("command","hello world");
+      client.publish(topic,"hello world");
       // ... and resubscribe
-      client.subscribe("presence");
+      client.subscribe(inTopic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
