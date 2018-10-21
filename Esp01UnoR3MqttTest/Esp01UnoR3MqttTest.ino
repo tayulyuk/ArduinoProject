@@ -77,7 +77,8 @@ void reconnect() {
     if (client.connect("arduinoClient")) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish(topic,"hello world");
+      client.publish(topic,"hello world",true);  //true -> retained 옵션 설정시 마지막 메시지가 broker에 큐 형태로 있다가
+      //다른 subcribe가 접속하면 큐에있던 메시지를 보낸다.-> 마지막 상태를 알수 있다.
       // ... and resubscribe
       client.subscribe(inTopic);
     } else {
