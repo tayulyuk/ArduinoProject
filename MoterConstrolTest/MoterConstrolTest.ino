@@ -37,11 +37,11 @@ String topis ="";
 char* mchar; //클라이언트로 부터 버튼의 값을 받는다. 이것으로 각 버튼에게 저장한다
 char *messge;// 버튼들의 값을 모아서 클라이언트로 보내기 위한 것.
 
-int buttonPin1 = D9;
-int buttonPin2 = D10;
-int buttonPin3 = D11;
-int buttonPin4 = D12;
-int buttonPinPower = D13;
+int buttonPin1 = D2;
+int buttonPin2 = D3;
+int buttonPin3 = D4;
+int buttonPin4 = D5;
+int buttonPinPower = D6;
 
 void setup() {
   pinMode(buttonPin1, OUTPUT);
