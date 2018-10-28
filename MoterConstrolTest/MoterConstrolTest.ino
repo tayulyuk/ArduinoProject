@@ -8,6 +8,7 @@ const char* password = "4jf38gf684";  // 와이파이 AP, 또는 스마트폰의
 //const char* password = "123456789000";  // 와이파이 AP, 또는 스마트폰의 핫스판 이름
 const char* mqtt_server = "119.205.235.214"; //브로커 주소
 
+//const char* outTopic = "siheung/namu/button1"; // 밖으로 내보내는 토픽.
 const char* outTopic = "siheung/namu/result"; // 밖으로 내보내는 토픽.
 //const char* inTopic = "siheung/namu/order"; // 외부에서 들어오는 토픽.
 const char* clientName = "980303Client";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
@@ -22,12 +23,13 @@ int led=BUILTIN_LED; // D1 mini에 있는 led를 사용
 int timeIn=1000;  // led가 깜박이는 시간을 mqtt 통신에서 전달받아 저장
 */
 
-//버튼들
-char button1[10];
-char button2[10];
-char button3[10];
-char button4[10];
-char buttonPower[10];
+//버튼 값들 저장.
+char button1[10]="0";
+char button2[10]="0";
+char button3[10]="0";
+char button4[10]="0";
+char buttonPower[10]="0";
+
 //void (* resetFunc)(void) =0;
 
 
@@ -36,12 +38,18 @@ String topis ="";
 
 char* mchar; //클라이언트로 부터 버튼의 값을 받는다. 이것으로 각 버튼에게 저장한다
 char *messge;// 버튼들의 값을 모아서 클라이언트로 보내기 위한 것.
-
-int buttonPin1 = D2;
-int buttonPin2 = D3;
-int buttonPin3 = D4;
-int buttonPin4 = D5;
-int buttonPinPower = D6;
+/*
+int buttonPin1 = D3;
+int buttonPin2 = D4;
+int buttonPin3 = D5;
+int buttonPin4 = D6;
+int buttonPinPower = D7;
+*/
+int buttonPin1 = 5;
+int buttonPin2 = 4;
+int buttonPin3 = 14;
+int buttonPin4 = 12;
+int buttonPinPower = 13;
 
 void setup() {
   pinMode(buttonPin1, OUTPUT);
@@ -183,7 +191,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
    //다시 클라이언트로 현재의 버튼 상황을 보낸다. & mqtt서버에 마지막 정보를 또한 저장된다. 항상클라이언트는 마지막 정보를 받는다.
     sprintf(messge,"|button1=%s|button2=%s|button3=%s|button4=%s|buttonPower=%s|",button1,button2,button3,button4,buttonPower);   
     client.publish(outTopic,messge,true);  //true -> retained 옵션 설정시 마지막 메시지가 broker에 큐 형태로 있다가
-   
+  // sprintf(messge,"%s",button1);
+   //client.publish(outTopic,messge,true); 
     //다른 subcribe가 접속하면 큐에있던 메시지를 보낸다.-> 마지막 상태를 알수 있다.      
     free(messge);
     free(mchar);
