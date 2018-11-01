@@ -4,8 +4,10 @@
 // 아래의 6개설정은 사용자 환경에 맞게 수정하세요.
 //const char* ssid = "KT_GiGA_2G_76C7"; // 와이파이 AP, 또는 스마트폰의 핫스판 이름
 //const char* password = "4jf38gf684";  // 와이파이 AP, 또는 스마트폰의 핫스판 이름
-const char* ssid = "YoukLeeIpTimeA1004"; // 와이파이 AP, 또는 스마트폰의 핫스판 이름
-const char* password = "123456789000";  // 와이파이 AP, 또는 스마트폰의 핫스판 이름
+//const char* ssid = "YoukLeeIpTimeA1004"; // 와이파이 AP, 또는 스마트폰의 핫스판 이름
+//const char* password = "123456789000";  // 와이파이 AP, 또는 스마트폰의 핫스판 이름
+const char* ssid = "iptime"; // 와이파이 AP, 또는 스마트폰의 핫스판 이름
+const char* password = "";  // 와이파이 AP, 또는 스마트폰의 핫스판 이름  //시흥 블루베리 
 const char* mqtt_server = "119.205.235.214"; //브로커 주소
 
 //const char* outTopic = "siheung/namu/button1"; // 밖으로 내보내는 토픽.
