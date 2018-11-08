@@ -66,8 +66,19 @@ void setup() {
 
   //wifiManager.startConfigPortal("OnDemandAP");
 
+  AllSetHigh();
+
 }
 
+//무슨이유인지 high해야 꺼지고  low해야 켜지네.. 에라 모르것다.
+void AllSetHigh()
+{
+  digitalWrite(buttonPinPower, HIGH);
+  digitalWrite(buttonPin1, HIGH);
+  digitalWrite(buttonPin2, HIGH);
+  digitalWrite(buttonPin3, HIGH);
+  digitalWrite(buttonPin4, HIGH);
+}
 
 // 통신에서 문자가 들어오면 이 함수의 payload 배열에 저장된다.
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -101,11 +112,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
     //버튼의 결과가 0이면 끔/1이면 켬
     if(inString == "0") //끔
     {
-     digitalWrite(buttonPin1, LOW);
+     digitalWrite(buttonPin1, HIGH);
     }
     if(inString == "1")//켬
     {
-      digitalWrite(buttonPin1, HIGH);
+      digitalWrite(buttonPin1, LOW);
     }
    }
     if(topis == "ModelOnOff/button2")  
@@ -117,11 +128,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
      //버튼의 결과가 0이면 끔/1이면 켬
     if(inString == "0") //끔
     {
-     digitalWrite(buttonPin2, LOW);
+     digitalWrite(buttonPin2, HIGH);
     }
     if(inString == "1")//켬
     {
-      digitalWrite(buttonPin2, HIGH);
+      digitalWrite(buttonPin2, LOW);
     }
    }
     if(topis == "ModelOnOff/button3")  
@@ -133,11 +144,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
      //버튼의 결과가 0이면 끔/1이면 켬
     if(inString == "0") //끔
     {
-     digitalWrite(buttonPin3, LOW);
+     digitalWrite(buttonPin3, HIGH);
     }
     if(inString == "1")//켬
     {
-      digitalWrite(buttonPin3, HIGH);
+      digitalWrite(buttonPin3, LOW);
     }
    }
     if(topis == "ModelOnOff/button4")  
@@ -149,11 +160,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
      //버튼의 결과가 0이면 끔/1이면 켬
     if(inString == "0") //끔
     {
-     digitalWrite(buttonPin4, LOW);
+     digitalWrite(buttonPin4, HIGH);
     }
     if(inString == "1")//켬
     {
-      digitalWrite(buttonPin4, HIGH);
+      digitalWrite(buttonPin4, LOW);
     }
    }
     if(topis == "ModelOnOff/buttonPower")  
@@ -165,11 +176,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
      //버튼의 결과가 0이면 끔/1이면 켬
     if(inString == "0") //끔
     {
-     digitalWrite(buttonPinPower, LOW);
+     digitalWrite(buttonPinPower, HIGH);
     }
     if(inString == "1")//켬
     {
-      digitalWrite(buttonPinPower, HIGH);
+      digitalWrite(buttonPinPower, LOW);
     }
    }
    //다시 클라이언트로 현재의 버튼 상황을 보낸다. & mqtt서버에 마지막 정보를 또한 저장된다. 항상클라이언트는 마지막 정보를 받는다.
