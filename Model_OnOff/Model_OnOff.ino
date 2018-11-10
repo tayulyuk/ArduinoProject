@@ -53,6 +53,9 @@ void setup() {
   pinMode(buttonPin4, OUTPUT);
   pinMode(buttonPinPower, OUTPUT);
   
+  //바로 꺼준다.
+  AllSetHigh();
+    
   Serial.begin(115200);
   
   //WiFiManager
@@ -65,12 +68,9 @@ void setup() {
   client.setCallback(callback);
 
   //wifiManager.startConfigPortal("OnDemandAP");
-
-  AllSetHigh();
-
 }
 
-//무슨이유인지 high해야 꺼지고  low해야 켜지네.. 에라 모르것다.
+// high해야 꺼지고  low해야 켜짐
 void AllSetHigh()
 {
   digitalWrite(buttonPinPower, HIGH);
@@ -108,7 +108,13 @@ void callback(char* topic, byte* payload, unsigned int length) {
    {
     Serial.println("button1");
     //각 버튼에 상태 입력하고 
-    *button1 = *mchar;       
+    *button1 = *mchar;  
+        
+    //<코딩과 제어에서 혼돈할수 있는 부분. >
+    //제어신호에 0을 입력시 릴레이가 ON 되며 COM공통단자와 NO단자가 연결되고 
+    //제어신호에 1을 입력시 릴레이가 OFF되며 COM공통단자와 NC단자가 연결됩니다.즉, COM은 공통단자입니다.
+    //0을 입력시 꺼지길 바란다.-> (버튼,HIGH)              1을 입력시 켜지길 바란다 ->(버튼, LOW )
+    
     //버튼의 결과가 0이면 끔/1이면 켬
     if(inString == "0") //끔
     {
