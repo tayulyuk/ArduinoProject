@@ -59,7 +59,8 @@ void setup() {
   pinMode(buttonPin3, OUTPUT);
   pinMode(buttonPin4, OUTPUT);
   pinMode(buttonPinPower, OUTPUT);
-  
+
+  AllSetHIGH();// 모든 전원 끄기.
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
@@ -86,7 +87,14 @@ void setup_wifi() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 }
-
+void AllSetHIGH()
+{
+  digitalWrite(buttonPin1, HIGH);
+  digitalWrite(buttonPin2, HIGH);
+  digitalWrite(buttonPin3, HIGH);
+  digitalWrite(buttonPin4, HIGH);
+  digitalWrite(buttonPinPower, HIGH);
+}
 // 통신에서 문자가 들어오면 이 함수의 payload 배열에 저장된다.
 void callback(char* topic, byte* payload, unsigned int length) {
   inString = "";
@@ -119,11 +127,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
     //버튼의 결과가 0이면 끔/1이면 켬
     if(inString == "0") //끔
     {
-     digitalWrite(buttonPin1, LOW);
+     digitalWrite(buttonPin1, HIGH);
     }
     if(inString == "1")//켬
     {
-      digitalWrite(buttonPin1, HIGH);
+      digitalWrite(buttonPin1, LOW);
     }
    }
     if(topis == "siheung/namu/button2")  
@@ -135,11 +143,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
      //버튼의 결과가 0이면 끔/1이면 켬
     if(inString == "0") //끔
     {
-     digitalWrite(buttonPin2, LOW);
+     digitalWrite(buttonPin2, HIGH);
     }
     if(inString == "1")//켬
     {
-      digitalWrite(buttonPin2, HIGH);
+      digitalWrite(buttonPin2, LOW);
     }
    }
     if(topis == "siheung/namu/button3")  
@@ -151,11 +159,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
      //버튼의 결과가 0이면 끔/1이면 켬
     if(inString == "0") //끔
     {
-     digitalWrite(buttonPin3, LOW);
+     digitalWrite(buttonPin3, HIGH);
     }
     if(inString == "1")//켬
     {
-      digitalWrite(buttonPin3, HIGH);
+      digitalWrite(buttonPin3, LOW);
     }
    }
     if(topis == "siheung/namu/button4")  
@@ -167,11 +175,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
      //버튼의 결과가 0이면 끔/1이면 켬
     if(inString == "0") //끔
     {
-     digitalWrite(buttonPin4, LOW);
+     digitalWrite(buttonPin4, HIGH);
     }
     if(inString == "1")//켬
     {
-      digitalWrite(buttonPin4, HIGH);
+      digitalWrite(buttonPin4, LOW);
     }
    }
     if(topis == "siheung/namu/buttonPower")  
@@ -183,11 +191,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
      //버튼의 결과가 0이면 끔/1이면 켬
     if(inString == "0") //끔
     {
-     digitalWrite(buttonPinPower, LOW);
+     digitalWrite(buttonPinPower, HIGH);
     }
     if(inString == "1")//켬
     {
-      digitalWrite(buttonPinPower, HIGH);
+      digitalWrite(buttonPinPower, LOW);
     }
    }
    //다시 클라이언트로 현재의 버튼 상황을 보낸다. & mqtt서버에 마지막 정보를 또한 저장된다. 항상클라이언트는 마지막 정보를 받는다.
