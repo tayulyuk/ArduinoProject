@@ -50,7 +50,7 @@ void loop()
 { 
    h = (int)dht.readHumidity();
    t = (int)dht.readTemperature();
- 
+  
   if (isnan(h) || isnan(t)) 
   {
   Serial.println("Failed to read from DHT sensor!");
@@ -64,10 +64,10 @@ void loop()
   }
   Serial.println("temp call"); 
   url ="/tempAndHumi.jsp?";
-   url +="temp1="; 
+   url +="temp2="; 
   url+=String(t);
   url+="&";
-  url+="humi1=";
+  url+="humi2=";
   url+=String(h);
   
   Serial.println(url);

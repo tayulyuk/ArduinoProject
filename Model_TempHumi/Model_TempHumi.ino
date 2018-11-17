@@ -112,10 +112,12 @@ void sendTemperature(){
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   //delay(3000);
- h = dht.readHumidity();
+// h = dht.readHumidity();
+ h = 12;
  
   // Read temperature as Celsius (the default)
-  t = dht.readTemperature();
+  //t = dht.readTemperature();
+  t = 89;
  
 delay(3000);
   // Check if any reads failed and exit early (to try again).
