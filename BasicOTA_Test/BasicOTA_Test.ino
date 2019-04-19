@@ -1,24 +1,40 @@
-#include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
-const char* ssid = "KT_GiGA_2G_76C7";
-const char* password = "4jf38gf684";
+//위와 아래가 공통되는 첨부.
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
+
+//needed for library
+#include <DNSServer.h>
+#include <ESP8266WebServer.h>
+#include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
+
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
 
 void setup() {
    pinMode(LED_BUILTIN, OUTPUT);  
    
   Serial.begin(115200);
   Serial.println("Booting");
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
+//  WiFi.mode(WIFI_STA);
+  //WiFi.begin(ssid, password);
+  /*
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("Connection Failed! Rebooting...");
     delay(5000);
     ESP.restart();
   }
+*/
 
+ WiFiManager wifiManager;
+    
+  wifiManager.autoConnect("AutoConAP_Test");
+  
   // Port defaults to 8266
   // ArduinoOTA.setPort(8266);
 
