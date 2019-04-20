@@ -72,6 +72,8 @@ void setup() {
     else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
     else if (error == OTA_END_ERROR) Serial.println("End Failed");
   });
+  ArduinoOTA.setPort(1500);
+  
   ArduinoOTA.begin();
   Serial.println("Ready");
   Serial.print("IP address: ");
@@ -83,6 +85,8 @@ String myName;
 int age;
 void loop() {
   ArduinoOTA.handle();
+  Serial.print("ok boot ok");
+  delay(3000);
 /*
   while (Serial.available()==0) {             //Wait for user input
   
@@ -113,8 +117,8 @@ void loop() {
       command += c;
     }
     */
-    delay(3000);
-    WiFi.disconnect();
+  //  delay(3000);
+  //  WiFi.disconnect();
 
     delay(3000);
     
