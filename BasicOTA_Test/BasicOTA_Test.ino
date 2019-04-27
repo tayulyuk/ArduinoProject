@@ -15,12 +15,14 @@
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-
+ WiFiManager wifiManager;
+ 
 void setup() {
-   pinMode(LED_BUILTIN, OUTPUT);  
+  
    
   Serial.begin(115200);
-  Serial.println("Booting");
+  Serial.println("Booting");  
+   
 //  WiFi.mode(WIFI_STA);
   //WiFi.begin(ssid, password);
   /*
@@ -30,10 +32,8 @@ void setup() {
     ESP.restart();
   }
 */
-
- WiFiManager wifiManager;
     
-  wifiManager.autoConnect("AutoConAP_Test");
+ // wifiManager.autoConnect("Auto_AP_Test");
   
   // Port defaults to 8266
   // ArduinoOTA.setPort(8266);
@@ -71,14 +71,15 @@ void setup() {
     else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
     else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
     else if (error == OTA_END_ERROR) Serial.println("End Failed");
-  });
-  ArduinoOTA.setPort(1500);
+  });  
   
   ArduinoOTA.begin();
   Serial.println("Ready");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
+//test
+   pinMode(LED_BUILTIN, OUTPUT);
   
 }
 String myName;
@@ -120,13 +121,22 @@ void loop() {
   //  delay(3000);
   //  WiFi.disconnect();
 
+  //test
+
+  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(1000);                       // wait for a second
+  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+  delay(1000);  
+
+
     delay(3000);
     
-    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("Connection Failed! Rebooting... okkkkkk");
-    delay(5000);
+  //  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+  // Serial.println("Connection Failed! Rebooting... okkkkkk");
+  //  delay(5000);
+  Serial.print("reset~ ");
     ESP.restart();
-  }
+ // }
   }
 /*
     digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on (Note that LOW is the voltage level

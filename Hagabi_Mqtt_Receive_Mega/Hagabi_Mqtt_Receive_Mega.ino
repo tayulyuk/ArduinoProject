@@ -57,6 +57,10 @@ void parseCommand(String com)
     if(pin != 34 && pin != 35)
       digitalWrite(pin +1 , LOW);//+  
   }  
+   else if(part1.equalsIgnoreCase("ping"))
+   {
+    Serial.println("pong"); //클라이언트에게 다시 보낸다.
+   }
   else{
     Serial.println("COMMAND NOT RECONGNIZED");
   }
