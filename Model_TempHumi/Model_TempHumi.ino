@@ -15,6 +15,7 @@ const char* mqtt_server = "119.205.235.214"; //브로커 주소
 
 const char* outTopic = "ModelTempHumi/result"; // 밖으로 내보내는 토픽.
 const char* clientName = "700303Client";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+const char* setWifiManagerName = "Auto_Model_Temp_Humi_Connect_AP";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -49,7 +50,7 @@ void setup()
 
   WiFiManager wifiManager;
     
-  wifiManager.autoConnect("AutoConnectAP");
+  wifiManager.autoConnect(setWifiManagerName);
   delay(50);
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
@@ -104,6 +105,14 @@ void reconnect() {
       Serial.println(" try again in 5 seconds");
       // Wait 5 seconds before retrying
       delay(5000);
+
+      /*
+       * 여기다가 재부팅 할수 있겠금 코딩 하자.
+       * 
+       * 
+       * 맨위에 OTA 넣자.
+       * /
+       */
     }
   }
 }
@@ -112,13 +121,11 @@ void sendTemperature(){
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   //delay(3000);
-// h = dht.readHumidity();
- h = 12;
+  h = dht.readHumidity(); 
  
   // Read temperature as Celsius (the default)
-  //t = dht.readTemperature();
-  t = 89;
- 
+  t = dht.readTemperature();
+   
 delay(3000);
   // Check if any reads failed and exit early (to try again).
   if (isnan(h) || isnan(t)) {
