@@ -12,9 +12,10 @@
 
 const char* mqtt_server = "119.205.235.214"; //브로커 주소
 
-
 const char* outTopic = "ModelOnOff/result"; // 밖으로 내보내는 토픽.
 const char* clientName = "980303Client";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+
+const char* setWifiManangerName = "Auto_Model_OnOff_Connect_AP";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -35,7 +36,7 @@ char button4[10]="0";
 char buttonPower[10]="0";
 
 String inString="";
-String topis ="";
+String topics ="";
 
 char* mchar; //클라이언트로 부터 버튼의 값을 받는다. 이것으로 각 버튼에게 저장한다
 char *messge;// 버튼들의 값을 모아서 클라이언트로 보내기 위한 것.
@@ -62,7 +63,7 @@ void setup() {
   //Local intialization. Once its business is done, there is no need to keep it around   
   WiFiManager wifiManager;
     
-  wifiManager.autoConnect("AutoConnectAP");
+  wifiManager.autoConnect(setWifiManangerName);
   
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
@@ -83,9 +84,9 @@ void AllSetHigh()
 // 통신에서 문자가 들어오면 이 함수의 payload 배열에 저장된다.
 void callback(char* topic, byte* payload, unsigned int length) {
   inString = "";
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
+  Serial.print("Message arrived [");   //---------------------------------------------
+  Serial.print(topic);//------------------------------------------------------------------------ test 후 꼭 주석.
+  Serial.print("] ");//--------------------------------------------------
   for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
   }
@@ -101,10 +102,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
     mchar[i] +=(char)payload[i];
   }
   
-  Serial.println("getString :" + inString);
+  Serial.println("getString :" + inString); //-----------------------------------------------
  
-   topis = topic;
-   if(topis == "ModelOnOff/button1")  
+   topics = topic;
+   if(topics == "ModelOnOff/button1")  
    {
     Serial.println("button1");
     //각 버튼에 상태 입력하고 
@@ -125,7 +126,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       digitalWrite(buttonPin1, LOW);
     }
    }
-    if(topis == "ModelOnOff/button2")  
+    if(topics == "ModelOnOff/button2")  
    {
     Serial.println("button2");
     //각 버튼에 상태 입력하고 
@@ -141,7 +142,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       digitalWrite(buttonPin2, LOW);
     }
    }
-    if(topis == "ModelOnOff/button3")  
+    if(topics == "ModelOnOff/button3")  
    {
     Serial.println("button3");
     //각 버튼에 상태 입력하고 
@@ -157,7 +158,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       digitalWrite(buttonPin3, LOW);
     }
    }
-    if(topis == "ModelOnOff/button4")  
+    if(topics == "ModelOnOff/button4")  
    {
     Serial.println("button4");
     //각 버튼에 상태 입력하고 
@@ -173,7 +174,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       digitalWrite(buttonPin4, LOW);
     }
    }
-    if(topis == "ModelOnOff/buttonPower")  
+    if(topics == "ModelOnOff/buttonPower")  
    {
     Serial.println("buttonPower");
     //각 버튼에 상태 입력하고 
@@ -221,6 +222,13 @@ void reconnect() {
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
       // Wait 5 seconds before retrying
+      /*
+       * 
+       * 다시 컨넥트 할수 있도록 재부팅 
+       * OTA 넣자.
+       * 통신이 불안하여 재접속했다고 클라이언트에게 알려줄까??
+       * 
+       */
       delay(5000);
     }
   }
