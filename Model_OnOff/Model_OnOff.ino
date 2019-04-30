@@ -6,7 +6,6 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 
-// 아래의 6개설정은 사용자 환경에 맞게 수정하세요.
 //const char* ssid = "KT_GiGA_2G_76C7"; // 와이파이 AP, 또는 스마트폰의 핫스판 이름
 //const char* password = "4jf38gf684";  // 와이파이 AP, 또는 스마트폰의 핫스판 이름
 
@@ -19,13 +18,6 @@ const char* setWifiManangerName = "Auto_Model_OnOff_Connect_AP";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-//long lastMsg = 0;
-//char msg[100];
-/*
-//int led=4; // D2 GPIO4 핀을 사용
-int led=BUILTIN_LED; // D1 mini에 있는 led를 사용
-int timeIn=1000;  // led가 깜박이는 시간을 mqtt 통신에서 전달받아 저장
-*/
 
 
 //버튼 값들 저장.
@@ -107,7 +99,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
    topics = topic;
    if(topics == "ModelOnOff/button1")  
    {
-    Serial.println("button1");
+    Serial.println("button1"); //---------------------------------------------------------------------
     //각 버튼에 상태 입력하고 
     *button1 = *mchar;  
         
@@ -126,9 +118,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
       digitalWrite(buttonPin1, LOW);
     }
    }
-    if(topics == "ModelOnOff/button2")  
+   else if(topics == "ModelOnOff/button2")  
    {
-    Serial.println("button2");
+    Serial.println("button2"); //----------------------------------------------------------------
     //각 버튼에 상태 입력하고 
     *button2 = *mchar;   
     
@@ -142,9 +134,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
       digitalWrite(buttonPin2, LOW);
     }
    }
-    if(topics == "ModelOnOff/button3")  
+   else if(topics == "ModelOnOff/button3")  
    {
-    Serial.println("button3");
+    Serial.println("button3"); //----------------------------------------------------------------
     //각 버튼에 상태 입력하고 
     *button3 = *mchar;   
 
@@ -158,9 +150,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
       digitalWrite(buttonPin3, LOW);
     }
    }
-    if(topics == "ModelOnOff/button4")  
+   else if(topics == "ModelOnOff/button4")  
    {
-    Serial.println("button4");
+    Serial.println("button4"); //---------------------------------------------------------------------
     //각 버튼에 상태 입력하고 
     *button4 = *mchar;   
 
@@ -174,9 +166,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
       digitalWrite(buttonPin4, LOW);
     }
    }
-    if(topics == "ModelOnOff/buttonPower")  
+   else if(topics == "ModelOnOff/buttonPower")  
    {
-    Serial.println("buttonPower");
+    Serial.println("buttonPower"); //----------------------------------------------------------------------------
     //각 버튼에 상태 입력하고 
     *buttonPower = *mchar;   
 
@@ -190,12 +182,13 @@ void callback(char* topic, byte* payload, unsigned int length) {
       digitalWrite(buttonPinPower, LOW);
     }
    }
-   //다시 클라이언트로 현재의 버튼 상황을 보낸다. & mqtt서버에 마지막 정보를 또한 저장된다. 항상클라이언트는 마지막 정보를 받는다.
-    sprintf(messge,"|button1=%s|button2=%s|button3=%s|button4=%s|buttonPower=%s|",button1,button2,button3,button4,buttonPower);   
-    client.publish(outTopic,messge,true);  //true -> retained 옵션 설정시 마지막 메시지가 broker에 큐 형태로 있다가
-  // sprintf(messge,"%s",button1);
-   //client.publish(outTopic,messge,true); 
-    //다른 subcribe가 접속하면 큐에있던 메시지를 보낸다.-> 마지막 상태를 알수 있다.      
+    //다시 클라이언트로 현재의 버튼 상황을 보낸다. & mqtt서버에 마지막 정보를 또한 저장된다. 항상클라이언트는 마지막 정보를 받는다.
+    sprintf(messge,"|button1=%s|button2=%s|button3=%s|button4=%s|buttonPower=%s|",button1,button2,button3,button4,buttonPower);  
+    
+    //true -> retained 옵션 설정시 마지막 메시지가 broker에 큐 형태로 있다가 
+    //다른 subcribe가 접속하면 큐에있던 메시지를 보낸다.-> 마지막 상태를 알수 있다.   
+    client.publish(outTopic,messge,true);    
+     
     free(messge);
     free(mchar);
 }
@@ -206,9 +199,10 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect(clientName)) {
-      Serial.println("connected");
-      // Once connected, publish an announcement...
+    if (client.connect(clientName)) 
+    {
+      Serial.println("connected");//------------------------------------------------------------------------------
+      // Once connected, publish an announcement...//  클라이언트에게 다시 접속 했다고 알림.
       client.publish(outTopic, "Reconnected");
       // ... and resubscribe    
      client.subscribe("ModelOnOff/button1");
@@ -216,12 +210,15 @@ void reconnect() {
      client.subscribe("ModelOnOff/button3");
      client.subscribe("ModelOnOff/button4");
      client.subscribe("ModelOnOff/buttonPower");
-        
-    } else {
+      // 핑을 넣자.  
+     client.subscribe("ModelOnOff/ping");     
+    }
+    else 
+    {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
+      // Wait 5 seconds before retrying--- 5초는 너무 길어.. 1초로 바꿔.
       /*
        * 
        * 다시 컨넥트 할수 있도록 재부팅 
@@ -229,7 +226,7 @@ void reconnect() {
        * 통신이 불안하여 재접속했다고 클라이언트에게 알려줄까??
        * 
        */
-      delay(5000);
+      delay(1000);
     }
   }
 }
@@ -240,11 +237,4 @@ void loop() {
     reconnect();
   }
   client.loop();
-/*
-  // 들어온 timeIn 값에 따라 led가 점멸하게 한다.
-  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(timeIn);                       // wait for a second
-  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  delay(timeIn); 
-  */
 }
