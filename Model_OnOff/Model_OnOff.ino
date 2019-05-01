@@ -203,7 +203,7 @@ void reconnect() {
     {
       Serial.println("connected");//------------------------------------------------------------------------------
       // Once connected, publish an announcement...//  클라이언트에게 다시 접속 했다고 알림.
-      client.publish(outTopic, "Reconnected");
+     client.publish(outTopic, "Reconnected");
       // ... and resubscribe    
      client.subscribe("ModelOnOff/button1"); //  정리 필요. string
      client.subscribe("ModelOnOff/button2");
