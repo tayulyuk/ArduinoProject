@@ -80,7 +80,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print(topic);//------------------------------------------------------------------------ test 후 꼭 주석.
   Serial.print("] ");//--------------------------------------------------
   for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
+    Serial.print((char)payload[i]);  //-------------------------------- 이것도 출력이네  .. print 부분 빼세요.
   }
   Serial.println();
 
@@ -205,7 +205,7 @@ void reconnect() {
       // Once connected, publish an announcement...//  클라이언트에게 다시 접속 했다고 알림.
       client.publish(outTopic, "Reconnected");
       // ... and resubscribe    
-     client.subscribe("ModelOnOff/button1");
+     client.subscribe("ModelOnOff/button1"); //  정리 필요. string
      client.subscribe("ModelOnOff/button2");
      client.subscribe("ModelOnOff/button3");
      client.subscribe("ModelOnOff/button4");
