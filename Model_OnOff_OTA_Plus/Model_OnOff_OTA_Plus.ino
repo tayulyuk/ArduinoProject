@@ -1,6 +1,10 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
+//OTA 
+#include <ESP8266mDNS.h>
+#include <ArduinoOTA.h>
+
 //needed for library
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
@@ -54,13 +58,47 @@ void setup() {
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around   
   WiFiManager wifiManager;
-    
-  wifiManager.autoConnect(setWifiManangerName);
+
+   if (!wifiManager.autoConnect(setWifiManangerName)) {
+    Serial.println("failed to connect and hit timeout");
+    //reset and try again, or maybe put it to deep sleep
+    ESP.reset();
+    delay(1000);
+  }
+  
+//-- OTA setup start
+    ArduinoOTA.onStart([]() {
+    Serial.println("Start OTA");
+  });
+
+  ArduinoOTA.onEnd([]() {
+    Serial.println("End OTA");
+  });
+
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\n", (progress / (total / 100)));
+  });
+
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+
+  ArduinoOTA.begin();
+
+  Serial.println("Ready");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+  //----- end OTA setup
   
   client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);
-
-  //wifiManager.startConfigPortal("OnDemandAP");
+  client.setCallback(callback); 
+//-- test
+//   pinMode(LED_BUILTIN, OUTPUT);
 }
 
 // high해야 꺼지고  low해야 켜짐
@@ -203,7 +241,7 @@ void reconnect() {
     {
       Serial.println("connected");//------------------------------------------------------------------------------
       // Once connected, publish an announcement...//  클라이언트에게 다시 접속 했다고 알림.
-     //client.publish(outTopic, "Reconnected");
+     client.publish(outTopic, "Reconnected");
       // ... and resubscribe    
      client.subscribe("ModelOnOff/button1"); //  정리 필요. string
      client.subscribe("ModelOnOff/button2");
@@ -231,10 +269,19 @@ void reconnect() {
   }
 }
 
-void loop() {
+void loop() { 
 
   if (!client.connected()) {
     reconnect();
   }
   client.loop();
+
+  //--test
+ //  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+ // delay(1000);                       // wait for a second
+ // digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+ // delay(1000);  
+
+  //OTA
+  ArduinoOTA.handle();
 }
