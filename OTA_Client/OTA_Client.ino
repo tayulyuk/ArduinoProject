@@ -48,6 +48,19 @@ void setup()
  
 void loop() 
 { 
+  //-- 추가 와이파이 start
+  while ( WiFi.status() != WL_CONNECTED ) 
+  {   
+    WiFi.begin(ssid, password);
+    if (WiFi.status() == WL_CONNECTED) 
+    {
+     Serial.println("WiFi Re_connected");
+    }
+    delay(5000);
+  }
+  //--  추가 와이파이 end
+  
+
    h = (int)dht.readHumidity();
    t = (int)dht.readTemperature();
   
@@ -57,12 +70,12 @@ void loop()
   return;
   }  
 
-  Serial.println("Start http client");
+ // Serial.println("Start http client");  //----------------------
   if (!client.connect(host, port)) {
     Serial.println("connection failed");
-    return;
+    return;    
   }
-  Serial.println("temp call"); 
+ // Serial.println("temp call"); 
   url ="/tempAndHumi.jsp?";
    url +="temp2="; 
   url+=String(t);
@@ -70,33 +83,25 @@ void loop()
   url+="humi2=";
   url+=String(h);
   
-  Serial.println(url);
+ // Serial.println(url);
   //This will send the request to the server
   client.print(String("GET ") + url + " HTTP/1.1\r\n" +
              "Host: " + host + "\r\n" + 
              "Connection: close\r\n\r\n");
-  delay(100);
-
-  Serial.println("Response");
-  // Read all the lines of the reply from server and print them to Serial
-  /*
-  while(client.available()){
-    String line = client.readStringUntil('\r');
-    Serial.println(line);
-    Serial.print(" temp http req");
-  }
-  */
-  Serial.println("Stop http client");
+  delay(100);  
+  
+//  Serial.println("Stop http client"); //---------------------------------- 
   client.stop();
-
-  Serial.print("Temperature: ");
+/*
+  Serial.print("Temperature: ");  //-------------------------------
   Serial.print(t);
-  Serial.print(" degrees Celsius Humidity: ");
+  Serial.print(" degrees Celsius Humidity: "); //--------------------------------------
   Serial.print(h);
-  Serial.println(" Sending data to sql pi");
+  Serial.println(" Sending data to sql pi");  //-------------------------------------------
 
-  Serial.println("Waiting...");
+  Serial.println("Waiting..."); //--------------------------------------------
   // convert to microseconds
  // ESP.deepSleep(sleepSeconds * 5000);
+ */
  delay(5000);
 }
