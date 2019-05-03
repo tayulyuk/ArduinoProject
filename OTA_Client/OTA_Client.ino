@@ -12,13 +12,13 @@ const int sleepSeconds = 300; //to save power i send the ESP to sleep
 int t,h;
 String url="";
 
-#define DHTPIN D2
-//#define DHTPIN 5  //==wemos d1 -> pin D3 (D1 과 wemos d1이 다른가보다  이설정은 D1에 적용했던것임)
+//#define DHTPIN D2
+#define DHTPIN 5  //pin은  esp-8266 pin 기중으로 설정하고  꼽을땐 대응되는 핀에 꼽아야 한다. wemos d1(검정색) D1핀 <-> esp 5번
 
 //#define DHTTYPE DHT22
 #define DHTTYPE DHT21
  
-DHT dht(DHTPIN, DHTTYPE,30);
+DHT dht(DHTPIN, DHTTYPE);
 WiFiClient client;
  
 void setup() 
@@ -78,10 +78,10 @@ void loop()
   }
  // Serial.println("temp call"); 
   url ="/tempAndHumi.jsp?";
-  url +="temp2="; 
+  url +="temp1="; 
   url+=String(t);
   url+="&";
-  url+="humi2=";
+  url+="humi1=";
   url+=String(h);
   
   //Serial.println(url);
@@ -93,7 +93,7 @@ void loop()
   
 //  Serial.println("Stop http client"); //---------------------------------- 
   client.stop();
-
+/*
   Serial.print("Temperature: ");  //-------------------------------
   Serial.print(t);
   Serial.print(" degrees Celsius Humidity: "); //--------------------------------------
@@ -103,6 +103,6 @@ void loop()
   Serial.println("Waiting..."); //--------------------------------------------
   // convert to microseconds
  // ESP.deepSleep(sleepSeconds * 5000);
-
+*/
  delay(5000);
 }

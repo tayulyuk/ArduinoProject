@@ -28,7 +28,7 @@ char msg[128];
 String url="";
 
 //#define DHTPIN D2
-#define DHTPIN 5  //==wemos d1 -> pin D3
+#define DHTPIN 5  //==wemos d1 -> pin D3   (pin은  esp-8266 pin 기중으로 설정하고  꼽을땐 대응되는 핀에 꼽아야 한다.)
 #define DHTTYPE DHT21
  
 DHT dht(DHTPIN, DHTTYPE);
