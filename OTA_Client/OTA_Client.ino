@@ -13,10 +13,12 @@ int t,h;
 String url="";
 
 #define DHTPIN D2
+//#define DHTPIN 5  //==wemos d1 -> pin D3 (D1 과 wemos d1이 다른가보다  이설정은 D1에 적용했던것임)
+
 //#define DHTTYPE DHT22
 #define DHTTYPE DHT21
  
-DHT dht(DHTPIN, DHTTYPE);
+DHT dht(DHTPIN, DHTTYPE,30);
 WiFiClient client;
  
 void setup() 
@@ -50,20 +52,19 @@ void loop()
 { 
   //-- 추가 와이파이 start
   while ( WiFi.status() != WL_CONNECTED ) 
-  {   
-    WiFi.begin(ssid, password);
+  {
     if (WiFi.status() == WL_CONNECTED) 
     {
      Serial.println("WiFi Re_connected");
-    }
-    delay(5000);
+    }      
   }
-  //--  추가 와이파이 end
-  
-
-   h = (int)dht.readHumidity();
-   t = (int)dht.readTemperature();
-  
+  //--  추가 와이파이 end  
+   
+  h = (int)dht.readHumidity();
+  t = (int)dht.readTemperature();  
+    
+    delay(3000);
+    
   if (isnan(h) || isnan(t)) 
   {
   Serial.println("Failed to read from DHT sensor!");
@@ -77,13 +78,13 @@ void loop()
   }
  // Serial.println("temp call"); 
   url ="/tempAndHumi.jsp?";
-   url +="temp2="; 
+  url +="temp2="; 
   url+=String(t);
   url+="&";
   url+="humi2=";
   url+=String(h);
   
- // Serial.println(url);
+  //Serial.println(url);
   //This will send the request to the server
   client.print(String("GET ") + url + " HTTP/1.1\r\n" +
              "Host: " + host + "\r\n" + 
@@ -92,7 +93,7 @@ void loop()
   
 //  Serial.println("Stop http client"); //---------------------------------- 
   client.stop();
-/*
+
   Serial.print("Temperature: ");  //-------------------------------
   Serial.print(t);
   Serial.print(" degrees Celsius Humidity: "); //--------------------------------------
@@ -102,6 +103,6 @@ void loop()
   Serial.println("Waiting..."); //--------------------------------------------
   // convert to microseconds
  // ESP.deepSleep(sleepSeconds * 5000);
- */
+
  delay(5000);
 }
