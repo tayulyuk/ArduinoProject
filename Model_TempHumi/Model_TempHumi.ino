@@ -60,29 +60,7 @@ void setup()
 
 // 통신에서 문자가 들어오면 이 함수의 payload 배열에 저장된다.
 void callback(char* topic, byte* payload, unsigned int length) {
-  /*
-  inString = "";
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
-
-  // payload로 들어온 문자를 정수로 바꾸기 위해 String inString에 저장후에 
-  for (int i = 0; i < length; i++) {
-    inString += (char)payload[i];   
-  }
-  
-  Serial.println("getString :" + inString);
  
-   topis = topic;
-   if(topis == "ModelTempHumi/PleaseTempHumi")  
-   {    
-     sendTemperature(); 
-    }
-    */
 }
 
 // mqtt 통신에 지속적으로 접속한다.
@@ -103,16 +81,8 @@ void reconnect() {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
-
-      /*
-       * 여기다가 재부팅 할수 있겠금 코딩 하자.
-       * 
-       * 
-       * 맨위에 OTA 넣자.
-       * /
-       */
+      // Wait 1 seconds before retrying
+      delay(1000);
     }
   }
 }
@@ -139,10 +109,7 @@ delay(3000);
     //다시 클라이언트로 현재의 버튼 상황을 보낸다. & mqtt서버에 마지막 정보를 또한 저장된다. 항상클라이언트는 마지막 정보를 받는다.
       sprintf(msg,"|Temp=%s|Humi=%s|",temp,humi);  
       
-    Serial.println(msg);
-  
-   // client.publish("plant/humidity", humi, true); // retained message
-   // client.publish("plant/temperature", temp, true); // retained message
+    Serial.println(msg);   
      
      //true옵션 -> retained 옵션 설정시 마지막 메시지가 broker에 큐 형태로 있다가
      //다른 subcribe가 접속하면 큐에있던 메시지를 보낸다.-> 마지막 상태를 알수 있다.    
@@ -152,6 +119,16 @@ delay(3000);
 
 void loop() 
 {   
+  //-- 추가 와이파이 start
+  while ( WiFi.status() != WL_CONNECTED ) 
+  {
+    if (WiFi.status() == WL_CONNECTED) 
+    {
+     Serial.println("WiFi Re_connected");
+    }      
+  }
+  //--  추가 와이파이 end  
+  
   if (!client.connected()) { // MQTT
     reconnect();
   }

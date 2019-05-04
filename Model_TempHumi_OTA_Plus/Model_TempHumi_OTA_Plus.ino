@@ -154,6 +154,16 @@ void sendTemperature(){
 
 void loop() 
 {   
+  //-- 추가 와이파이 start
+  while ( WiFi.status() != WL_CONNECTED ) 
+  {
+    if (WiFi.status() == WL_CONNECTED) 
+    {
+     Serial.println("WiFi Re_connected");
+    }      
+  }
+  //--  추가 와이파이 end  
+  
   if (!client.connected()) { // MQTT
     reconnect();
   }
