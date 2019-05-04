@@ -112,12 +112,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
-   // Serial.print("Attempting MQTT connection...");
+    Serial.print("Attempting MQTT connection...");
     // Attempt to connect
     if (client.connect(clientName)) {
-    //  Serial.println("connected");
+      Serial.println("connected");
       // Once connected, publish an announcement...
-      //client.publish(outTopic, "Reconnected");
+      client.publish(outTopic, "Reconnected");
       // ... and resubscribe    
 
       // GUID를 활용하자.
