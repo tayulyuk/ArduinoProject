@@ -3,8 +3,8 @@
 #include <DHT.h>
 #include <ESP8266WiFi.h>
 
-const char* ssid = "KT_GiGA_2G_76C7";
-const char* password = "4jf38gf684";
+const char* ssid = "KT_GiGA_2G_Wave2_CDC0";
+const char* password = "4fd0dhh108";
 const char* host = "www.hagabi.com";  //Server IP
 const int   port = 80;            //Server Port
 const int sleepSeconds = 300; //to save power i send the ESP to sleep
@@ -78,10 +78,10 @@ void loop()
   }
  // Serial.println("temp call"); 
   url ="/tempAndHumi.jsp?";
-  url +="temp1="; 
+  url +="temp2="; 
   url+=String(t);
   url+="&";
-  url+="humi1=";
+  url+="humi2=";
   url+=String(h);
   
   //Serial.println(url);
@@ -93,16 +93,6 @@ void loop()
   
 //  Serial.println("Stop http client"); //---------------------------------- 
   client.stop();
-/*
-  Serial.print("Temperature: ");  //-------------------------------
-  Serial.print(t);
-  Serial.print(" degrees Celsius Humidity: "); //--------------------------------------
-  Serial.print(h);
-  Serial.println(" Sending data to sql pi");  //-------------------------------------------
 
-  Serial.println("Waiting..."); //--------------------------------------------
-  // convert to microseconds
- // ESP.deepSleep(sleepSeconds * 5000);
-*/
  delay(5000);
 }
