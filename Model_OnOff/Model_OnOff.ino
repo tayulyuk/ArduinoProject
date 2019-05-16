@@ -12,7 +12,7 @@
 const char* mqtt_server = "119.205.235.214"; //브로커 주소
 
 const char* outTopic = "ModelOnOff/result"; // 밖으로 내보내는 토픽.
-const char* clientName = "980303Client";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+const char* clientName = "ModelOnOff";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
 
 const char* setWifiManangerName = "Auto_Model_OnOff_Connect_AP";
 
