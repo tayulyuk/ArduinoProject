@@ -1,40 +1,120 @@
 // ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2018
+// Copyright Benoit Blanchon 2014-2019
 // MIT License
 
 #pragma once
 
-#include <stddef.h>  // for size_t
-#include <stdint.h>  // for uint8_t
-#include <string.h>
-
-#include "../Configuration.hpp"
-#include "../Polyfills/attributes.hpp"
+#include "../Polyfills/assert.hpp"
+#include "../Polyfills/mpl/max.hpp"
+#include "../Variant/VariantSlot.hpp"
+#include "Alignment.hpp"
+#include "MemoryPool.hpp"
+#include "StringSlot.hpp"
 
 namespace ARDUINOJSON_NAMESPACE {
-// Handle the memory management (done in derived classes) and calls the parser.
-// This abstract class is implemented by StaticMemoryPool which implements a
-// fixed memory allocation.
+
+// _begin                                _end
+// v                                        v
+// +-------------+--------------+-----------+
+// | strings...  |   (free)     |  ...slots |
+// +-------------+--------------+-----------+
+//               ^              ^
+//             _left          _right
+
 class MemoryPool {
  public:
-  // Allocates n bytes in the MemoryPool.
-  // Return a pointer to the allocated memory or NULL if allocation fails.
-  virtual void *alloc(size_t size) = 0;
-
- protected:
-  // CAUTION: NO VIRTUAL DESTRUCTOR!
-  // If we add a virtual constructor the Arduino compiler will add malloc()
-  // and free() to the binary, adding 706 useless bytes.
-  ~MemoryPool() {}
-
-  // Preserve aligment if necessary
-  static FORCE_INLINE size_t round_size_up(size_t bytes) {
-#if ARDUINOJSON_ENABLE_ALIGNMENT
-    const size_t x = sizeof(void *) - 1;
-    return (bytes + x) & ~x;
-#else
-    return bytes;
-#endif
+  MemoryPool(char* buf, size_t capa)
+      : _begin(buf),
+        _left(buf),
+        _right(buf ? buf + capa : 0),
+        _end(buf ? buf + capa : 0) {
+    ARDUINOJSON_ASSERT(isAligned(_begin));
+    ARDUINOJSON_ASSERT(isAligned(_right));
+    ARDUINOJSON_ASSERT(isAligned(_end));
   }
+
+  void* buffer() {
+    return _begin;
+  }
+
+  // Gets the capacity of the memoryPool in bytes
+  size_t capacity() const {
+    return size_t(_end - _begin);
+  }
+
+  size_t size() const {
+    return size_t(_left - _begin + _end - _right);
+  }
+
+  VariantSlot* allocVariant() {
+    return allocRight<VariantSlot>();
+  }
+
+  char* allocFrozenString(size_t n) {
+    if (!canAlloc(n)) return 0;
+    char* s = _left;
+    _left += n;
+    checkInvariants();
+    return s;
+  }
+
+  StringSlot allocExpandableString() {
+    StringSlot s;
+    s.value = _left;
+    s.size = size_t(_right - _left);
+    _left = _right;
+    checkInvariants();
+    return s;
+  }
+
+  void freezeString(StringSlot& s, size_t newSize) {
+    _left -= (s.size - newSize);
+    s.size = newSize;
+    checkInvariants();
+  }
+
+  void clear() {
+    _left = _begin;
+    _right = _end;
+  }
+
+  bool canAlloc(size_t bytes) const {
+    return _left + bytes <= _right;
+  }
+
+  bool owns(void* p) const {
+    return _begin <= p && p < _end;
+  }
+
+  template <typename T>
+  T* allocRight() {
+    return reinterpret_cast<T*>(allocRight(sizeof(T)));
+  }
+
+  void* allocRight(size_t bytes) {
+    if (!canAlloc(bytes)) return 0;
+    _right -= bytes;
+    return _right;
+  }
+
+  // Workaround for missing placement new
+  void* operator new(size_t, void* p) {
+    return p;
+  }
+
+ private:
+  StringSlot* allocStringSlot() {
+    return allocRight<StringSlot>();
+  }
+
+  void checkInvariants() {
+    ARDUINOJSON_ASSERT(_begin <= _left);
+    ARDUINOJSON_ASSERT(_left <= _right);
+    ARDUINOJSON_ASSERT(_right <= _end);
+    ARDUINOJSON_ASSERT(isAligned(_right));
+  }
+
+  char *_begin, *_left, *_right, *_end;
 };
+
 }  // namespace ARDUINOJSON_NAMESPACE

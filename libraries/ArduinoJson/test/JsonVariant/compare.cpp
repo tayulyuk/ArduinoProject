@@ -1,5 +1,5 @@
 // ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2018
+// Copyright Benoit Blanchon 2014-2019
 // MIT License
 
 #include <ArduinoJson.h>
@@ -9,7 +9,7 @@ static const char* null = 0;
 
 template <typename T>
 void checkEquals(T a, T b) {
-  DynamicJsonDocument doc;
+  DynamicJsonDocument doc(4096);
   JsonVariant variant = doc.to<JsonVariant>();
   variant.set(a);
 
@@ -30,7 +30,7 @@ void checkEquals(T a, T b) {
 
 template <typename T>
 void checkGreater(T a, T b) {
-  DynamicJsonDocument doc;
+  DynamicJsonDocument doc(4096);
   JsonVariant variant = doc.to<JsonVariant>();
   variant.set(a);
 
@@ -47,7 +47,7 @@ void checkGreater(T a, T b) {
 
 template <typename T>
 void checkLower(T a, T b) {
-  DynamicJsonDocument doc;
+  DynamicJsonDocument doc(4096);
   JsonVariant variant = doc.to<JsonVariant>();
   variant.set(a);
 
@@ -111,7 +111,7 @@ TEST_CASE("JsonVariant comparisons") {
   }
 
   SECTION("null") {
-    DynamicJsonDocument doc;
+    DynamicJsonDocument doc(4096);
     JsonVariant variant = doc.to<JsonVariant>();
     variant.set(null);
 
@@ -126,7 +126,7 @@ TEST_CASE("JsonVariant comparisons") {
   }
 
   SECTION("StringLiteral") {
-    DynamicJsonDocument doc;
+    DynamicJsonDocument doc(4096);
     deserializeJson(doc, "\"hello\"");
     JsonVariant variant = doc.as<JsonVariant>();
 
@@ -153,7 +153,7 @@ TEST_CASE("JsonVariant comparisons") {
   }
 
   SECTION("String") {
-    DynamicJsonDocument doc;
+    DynamicJsonDocument doc(4096);
     JsonVariant variant = doc.to<JsonVariant>();
     variant.set("hello");
 
@@ -185,7 +185,7 @@ TEST_CASE("JsonVariant comparisons") {
     char vla[i];
     strcpy(vla, "hello");
 
-    DynamicJsonDocument doc;
+    DynamicJsonDocument doc(4096);
     JsonVariant variant = doc.to<JsonVariant>();
     variant.set("hello");
 
@@ -200,7 +200,7 @@ TEST_CASE("JsonVariant comparisons") {
     char vla[i];
     strcpy(vla, "hello");
 
-    DynamicJsonDocument doc;
+    DynamicJsonDocument doc(4096);
     JsonVariant variant = doc.to<JsonVariant>();
     variant.set("world");
 
@@ -211,12 +211,12 @@ TEST_CASE("JsonVariant comparisons") {
   }
 #endif
 
-  DynamicJsonDocument doc1, doc2, doc3;
+  DynamicJsonDocument doc1(4096), doc2(4096), doc3(4096);
   JsonVariant variant1 = doc1.to<JsonVariant>();
   JsonVariant variant2 = doc2.to<JsonVariant>();
   JsonVariant variant3 = doc3.to<JsonVariant>();
 
-  SECTION("IntegerInVariant") {
+  SECTION("Variants containing integers") {
     variant1.set(42);
     variant2.set(42);
     variant3.set(666);
@@ -228,9 +228,14 @@ TEST_CASE("JsonVariant comparisons") {
     REQUIRE_FALSE(variant1 == variant3);
   }
 
-  SECTION("StringInVariant") {
-    variant1.set("0hello" + 1);  // make sure they have
-    variant2.set("1hello" + 1);  // different addresses
+  SECTION("Variants containing linked strings") {
+    // create two identical strings at different addresses
+    char hello1[] = "hello";
+    char hello2[] = "hello";
+    REQUIRE(hello1 != hello2);
+
+    variant1.set(hello1);
+    variant2.set(hello2);
     variant3.set("world");
 
     REQUIRE(variant1 == variant2);
@@ -240,7 +245,48 @@ TEST_CASE("JsonVariant comparisons") {
     REQUIRE_FALSE(variant1 == variant3);
   }
 
-  SECTION("DoubleInVariant") {
+  SECTION("Variants containing owned strings") {
+    variant1.set(std::string("hello"));
+    variant2.set(std::string("hello"));
+    variant3.set(std::string("world"));
+
+    REQUIRE(variant1 == variant2);
+    REQUIRE_FALSE(variant1 != variant2);
+
+    REQUIRE(variant1 != variant3);
+    REQUIRE_FALSE(variant1 == variant3);
+  }
+
+  SECTION("Variants containing linked raws") {
+    // create two identical strings at different addresses
+    char hello1[] = "hello";
+    char hello2[] = "hello";
+    REQUIRE(hello1 != hello2);
+
+    variant1.set(serialized(hello1));
+    variant2.set(serialized(hello2));
+    variant3.set(serialized("world"));
+
+    REQUIRE(variant1 == variant2);
+    REQUIRE_FALSE(variant1 != variant2);
+
+    REQUIRE(variant1 != variant3);
+    REQUIRE_FALSE(variant1 == variant3);
+  }
+
+  SECTION("Variants containing owned raws") {
+    variant1.set(serialized(std::string("hello")));
+    variant2.set(serialized(std::string("hello")));
+    variant3.set(serialized(std::string("world")));
+
+    REQUIRE(variant1 == variant2);
+    REQUIRE_FALSE(variant1 != variant2);
+
+    REQUIRE(variant1 != variant3);
+    REQUIRE_FALSE(variant1 == variant3);
+  }
+
+  SECTION("Variants containing double") {
     variant1.set(42.0);
     variant2.set(42.0);
     variant3.set(666.0);
@@ -293,10 +339,10 @@ TEST_CASE("JsonVariant comparisons") {
   }
 
   // SECTION("VariantsOfDifferentTypes") {
-  //   DynamicJsonDocument doc1;
+  //   DynamicJsonDocument doc1(4096);
   //   JsonObject obj = doc1.to<JsonObject>();
 
-  //   DynamicJsonDocument doc2;
+  //   DynamicJsonDocument doc2(4096);
   //   JsonArray arr = doc2.to<JsonArray>();
   //   JsonVariant variants[] = {
   //       true, 42, 666.667, "hello", arr, obj,

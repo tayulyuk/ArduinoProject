@@ -1,16 +1,16 @@
 // ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2018
+// Copyright Benoit Blanchon 2014-2019
 // MIT License
 
 #include <ArduinoJson.h>
 #include <catch.hpp>
 
 TEST_CASE("JsonObject::operator==()") {
-  DynamicJsonDocument doc1;
+  DynamicJsonDocument doc1(4096);
   JsonObject obj1 = doc1.to<JsonObject>();
   JsonObjectConst obj1c = obj1;
 
-  DynamicJsonDocument doc2;
+  DynamicJsonDocument doc2(4096);
   JsonObject obj2 = doc2.to<JsonObject>();
   JsonObjectConst obj2c = obj2;
 
@@ -22,7 +22,25 @@ TEST_CASE("JsonObject::operator==()") {
     REQUIRE_FALSE(obj1c == obj2c);
   }
 
-  SECTION("should return false when objs differ") {
+  SECTION("should return false when LHS has more elements") {
+    obj1["hello"] = "coucou";
+    obj1["world"] = 666;
+    obj2["hello"] = "coucou";
+
+    REQUIRE_FALSE(obj1 == obj2);
+    REQUIRE_FALSE(obj1c == obj2c);
+  }
+
+  SECTION("should return false when RKS has more elements") {
+    obj1["hello"] = "coucou";
+    obj2["hello"] = "coucou";
+    obj2["world"] = 666;
+
+    REQUIRE_FALSE(obj1 == obj2);
+    REQUIRE_FALSE(obj1c == obj2c);
+  }
+
+  SECTION("should return true when objs equal") {
     obj1["hello"] = "world";
     obj1["anwser"] = 42;
     // insert in different order

@@ -1,5 +1,5 @@
 // ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2018
+// Copyright Benoit Blanchon 2014-2019
 // MIT License
 
 #include <ArduinoJson.h>
@@ -21,13 +21,12 @@ static void check(const JsonArray array, const char (&expected_data)[N]) {
   check(array, expected_data, expected_len);
 }
 
-// TODO: this function is used by the commented test
-// static void check(const JsonArray array, const std::string& expected) {
-//   check(array, expected.data(), expected.length());
-// }
+static void check(const JsonArray array, const std::string& expected) {
+  check(array, expected.data(), expected.length());
+}
 
 TEST_CASE("serialize MsgPack array") {
-  DynamicJsonDocument doc;
+  DynamicJsonDocument doc(JSON_ARRAY_SIZE(65536));
   JsonArray array = doc.to<JsonArray>();
 
   SECTION("empty") {
@@ -49,12 +48,11 @@ TEST_CASE("serialize MsgPack array") {
           "\x0E\x0F");
   }
 
-  // TODO: this test is too slow
-  // SECTION("array 32") {
-  //   const char* nil = 0;
-  //   for (int i = 0; i < 65536; i++) array.add(nil);
-  //
-  //   check(array,
-  //         std::string("\xDD\x00\x01\x00\x00", 5) + std::string(65536, 0xC0));
-  // }
+  SECTION("array 32") {
+    const char* nil = 0;
+    for (int i = 0; i < 65536; i++) array.add(nil);
+
+    check(array,
+          std::string("\xDD\x00\x01\x00\x00", 5) + std::string(65536, '\xc0'));
+  }
 }

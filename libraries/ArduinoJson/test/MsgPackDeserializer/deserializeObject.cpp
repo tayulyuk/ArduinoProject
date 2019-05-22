@@ -1,12 +1,12 @@
 // ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2018
+// Copyright Benoit Blanchon 2014-2019
 // MIT License
 
 #include <ArduinoJson.h>
 #include <catch.hpp>
 
 TEST_CASE("deserialize MsgPack object") {
-  DynamicJsonDocument doc;
+  DynamicJsonDocument doc(4096);
 
   SECTION("fixmap") {
     SECTION("empty") {
@@ -22,6 +22,46 @@ TEST_CASE("deserialize MsgPack object") {
 
     SECTION("two integers") {
       const char* input = "\x82\xA3one\x01\xA3two\x02";
+
+      DeserializationError error = deserializeMsgPack(doc, input);
+      JsonObject obj = doc.as<JsonObject>();
+
+      REQUIRE(error == DeserializationError::Ok);
+      REQUIRE(doc.is<JsonObject>());
+      REQUIRE(obj.size() == 2);
+      REQUIRE(obj["one"] == 1);
+      REQUIRE(obj["two"] == 2);
+    }
+
+    SECTION("key is str 8") {
+      const char* input = "\x82\xd9\x03one\x01\xd9\x03two\x02";
+
+      DeserializationError error = deserializeMsgPack(doc, input);
+      JsonObject obj = doc.as<JsonObject>();
+
+      REQUIRE(error == DeserializationError::Ok);
+      REQUIRE(doc.is<JsonObject>());
+      REQUIRE(obj.size() == 2);
+      REQUIRE(obj["one"] == 1);
+      REQUIRE(obj["two"] == 2);
+    }
+
+    SECTION("key is str 16") {
+      const char* input = "\x82\xda\x00\x03one\x01\xda\x00\x03two\x02";
+
+      DeserializationError error = deserializeMsgPack(doc, input);
+      JsonObject obj = doc.as<JsonObject>();
+
+      REQUIRE(error == DeserializationError::Ok);
+      REQUIRE(doc.is<JsonObject>());
+      REQUIRE(obj.size() == 2);
+      REQUIRE(obj["one"] == 1);
+      REQUIRE(obj["two"] == 2);
+    }
+
+    SECTION("key is str 32") {
+      const char* input =
+          "\x82\xdb\x00\x00\x00\x03one\x01\xdb\x00\x00\x00\x03two\x02";
 
       DeserializationError error = deserializeMsgPack(doc, input);
       JsonObject obj = doc.as<JsonObject>();

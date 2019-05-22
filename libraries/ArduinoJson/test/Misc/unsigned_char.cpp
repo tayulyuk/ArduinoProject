@@ -1,5 +1,5 @@
 // ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2018
+// Copyright Benoit Blanchon 2014-2019
 // MIT License
 
 #include <ArduinoJson.h>
@@ -29,7 +29,7 @@ TEST_CASE("unsigned char[]") {
   }
 
   SECTION("JsonVariant") {
-    DynamicJsonDocument doc;
+    DynamicJsonDocument doc(4096);
 
     SECTION("set") {
       unsigned char value[] = "42";
@@ -92,7 +92,7 @@ TEST_CASE("unsigned char[]") {
     SECTION("operator[]") {
       unsigned char key[] = "hello";
 
-      DynamicJsonDocument doc;
+      DynamicJsonDocument doc(4096);
       JsonObject obj = doc.to<JsonObject>();
       obj[key] = "world";
 
@@ -102,7 +102,7 @@ TEST_CASE("unsigned char[]") {
     SECTION("JsonObject::operator[] const") {
       unsigned char key[] = "hello";
 
-      DynamicJsonDocument doc;
+      DynamicJsonDocument doc(4096);
       deserializeJson(doc, "{\"hello\":\"world\"}");
 
       JsonObject obj = doc.as<JsonObject>();
@@ -110,49 +110,10 @@ TEST_CASE("unsigned char[]") {
     }
 #endif
 
-    SECTION("get()") {
-      unsigned char key[] = "hello";
-
-      DynamicJsonDocument doc;
-      deserializeJson(doc, "{\"hello\":\"world\"}");
-      JsonObject obj = doc.as<JsonObject>();
-      REQUIRE(std::string("world") == obj.get<char*>(key));
-    }
-
-    SECTION("set() key") {
-      unsigned char key[] = "hello";
-
-      DynamicJsonDocument doc;
-      JsonObject obj = doc.to<JsonObject>();
-      obj.set(key, "world");
-
-      REQUIRE(std::string("world") == obj["hello"]);
-    }
-
-    SECTION("set() value") {
-      unsigned char value[] = "world";
-
-      DynamicJsonDocument doc;
-      JsonObject obj = doc.to<JsonObject>();
-      obj.set("hello", value);
-
-      REQUIRE(std::string("world") == obj["hello"]);
-    }
-
-    SECTION("set() key&value") {
-      unsigned char key[] = "world";
-
-      DynamicJsonDocument doc;
-      JsonObject obj = doc.to<JsonObject>();
-      obj.set(key, key);
-
-      REQUIRE(std::string("world") == obj["world"]);
-    }
-
     SECTION("containsKey()") {
       unsigned char key[] = "hello";
 
-      DynamicJsonDocument doc;
+      DynamicJsonDocument doc(4096);
       deserializeJson(doc, "{\"hello\":\"world\"}");
       JsonObject obj = doc.as<JsonObject>();
       REQUIRE(true == obj.containsKey(key));
@@ -161,7 +122,7 @@ TEST_CASE("unsigned char[]") {
     SECTION("remove()") {
       unsigned char key[] = "hello";
 
-      DynamicJsonDocument doc;
+      DynamicJsonDocument doc(4096);
       deserializeJson(doc, "{\"hello\":\"world\"}");
       JsonObject obj = doc.as<JsonObject>();
       obj.remove(key);
@@ -169,20 +130,10 @@ TEST_CASE("unsigned char[]") {
       REQUIRE(0 == obj.size());
     }
 
-    SECTION("is()") {
-      unsigned char key[] = "hello";
-
-      DynamicJsonDocument doc;
-      deserializeJson(doc, "{\"hello\":42}");
-      JsonObject obj = doc.as<JsonObject>();
-
-      REQUIRE(true == obj.is<int>(key));
-    }
-
     SECTION("createNestedArray()") {
       unsigned char key[] = "hello";
 
-      DynamicJsonDocument doc;
+      DynamicJsonDocument doc(4096);
       JsonObject obj = doc.to<JsonObject>();
       obj.createNestedArray(key);
     }
@@ -190,17 +141,17 @@ TEST_CASE("unsigned char[]") {
     SECTION("createNestedObject()") {
       unsigned char key[] = "hello";
 
-      DynamicJsonDocument doc;
+      DynamicJsonDocument doc(4096);
       JsonObject obj = doc.to<JsonObject>();
       obj.createNestedObject(key);
     }
   }
 
-  SECTION("JsonObjectSubscript") {
+  SECTION("MemberProxy") {
     SECTION("operator=") {  // issue #416
       unsigned char value[] = "world";
 
-      DynamicJsonDocument doc;
+      DynamicJsonDocument doc(4096);
       JsonObject obj = doc.to<JsonObject>();
       obj["hello"] = value;
 
@@ -210,7 +161,7 @@ TEST_CASE("unsigned char[]") {
     SECTION("set()") {
       unsigned char value[] = "world";
 
-      DynamicJsonDocument doc;
+      DynamicJsonDocument doc(4096);
       JsonObject obj = doc.to<JsonObject>();
       obj["hello"].set(value);
 
@@ -222,30 +173,19 @@ TEST_CASE("unsigned char[]") {
     SECTION("add()") {
       unsigned char value[] = "world";
 
-      DynamicJsonDocument doc;
+      DynamicJsonDocument doc(4096);
       JsonArray arr = doc.to<JsonArray>();
       arr.add(value);
 
       REQUIRE(std::string("world") == arr[0]);
     }
-
-    SECTION("set()") {
-      unsigned char value[] = "world";
-
-      DynamicJsonDocument doc;
-      JsonArray arr = doc.to<JsonArray>();
-      arr.add("hello");
-      arr.set(0, value);
-
-      REQUIRE(std::string("world") == arr[0]);
-    }
   }
 
-  SECTION("JsonArraySubscript") {
+  SECTION("ElementProxy") {
     SECTION("set()") {
       unsigned char value[] = "world";
 
-      DynamicJsonDocument doc;
+      DynamicJsonDocument doc(4096);
       JsonArray arr = doc.to<JsonArray>();
       arr.add("hello");
       arr[0].set(value);
@@ -256,7 +196,7 @@ TEST_CASE("unsigned char[]") {
     SECTION("operator=") {
       unsigned char value[] = "world";
 
-      DynamicJsonDocument doc;
+      DynamicJsonDocument doc(4096);
       JsonArray arr = doc.to<JsonArray>();
       arr.add("hello");
       arr[0] = value;

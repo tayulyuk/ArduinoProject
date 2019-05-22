@@ -1,5 +1,5 @@
 // ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2018
+// Copyright Benoit Blanchon 2014-2019
 // MIT License
 
 #include <ArduinoJson.h>
@@ -17,7 +17,7 @@ void check(const JsonObject obj, const std::string &expected) {
 }
 
 TEST_CASE("serializeJson(JsonObject)") {
-  DynamicJsonDocument doc;
+  DynamicJsonDocument doc(4096);
   JsonObject obj = doc.to<JsonObject>();
 
   SECTION("EmptyObject") {
@@ -26,7 +26,7 @@ TEST_CASE("serializeJson(JsonObject)") {
 
   SECTION("TwoStrings") {
     obj["key1"] = "value1";
-    obj.set("key2", "value2");
+    obj["key2"] = "value2";
 
     check(obj, "{\"key1\":\"value1\",\"key2\":\"value2\"}");
   }
@@ -64,52 +64,52 @@ TEST_CASE("serializeJson(JsonObject)") {
 
   SECTION("TwoIntegers") {
     obj["a"] = 1;
-    obj.set("b", 2);
+    obj["b"] = 2;
     check(obj, "{\"a\":1,\"b\":2}");
   }
 
   SECTION("serialized(const char*)") {
     obj["a"] = serialized("[1,2]");
-    obj.set("b", serialized("[4,5]"));
+    obj["b"] = serialized("[4,5]");
     check(obj, "{\"a\":[1,2],\"b\":[4,5]}");
   }
 
   SECTION("Two doubles") {
     obj["a"] = 12.34;
-    obj.set("b", 56.78);
+    obj["b"] = 56.78;
     check(obj, "{\"a\":12.34,\"b\":56.78}");
   }
 
   SECTION("TwoNull") {
     obj["a"] = static_cast<char *>(0);
-    obj.set("b", static_cast<char *>(0));
+    obj["b"] = static_cast<char *>(0);
     check(obj, "{\"a\":null,\"b\":null}");
   }
 
   SECTION("TwoBooleans") {
     obj["a"] = true;
-    obj.set("b", false);
+    obj["b"] = false;
     check(obj, "{\"a\":true,\"b\":false}");
   }
 
   SECTION("ThreeNestedArrays") {
-    DynamicJsonDocument b;
-    DynamicJsonDocument c;
+    DynamicJsonDocument b(4096);
+    DynamicJsonDocument c(4096);
 
     obj.createNestedArray("a");
     obj["b"] = b.to<JsonArray>();
-    obj.set("c", c.to<JsonArray>());
+    obj["c"] = c.to<JsonArray>();
 
     check(obj, "{\"a\":[],\"b\":[],\"c\":[]}");
   }
 
   SECTION("ThreeNestedObjects") {
-    DynamicJsonDocument b;
-    DynamicJsonDocument c;
+    DynamicJsonDocument b(4096);
+    DynamicJsonDocument c(4096);
 
     obj.createNestedObject("a");
     obj["b"] = b.to<JsonObject>();
-    obj.set("c", c.to<JsonObject>());
+    obj["c"] = c.to<JsonObject>();
 
     check(obj, "{\"a\":{},\"b\":{},\"c\":{}}");
   }

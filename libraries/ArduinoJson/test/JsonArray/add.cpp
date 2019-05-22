@@ -1,12 +1,12 @@
 // ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2018
+// Copyright Benoit Blanchon 2014-2019
 // MIT License
 
 #include <ArduinoJson.h>
 #include <catch.hpp>
 
 TEST_CASE("JsonArray::add()") {
-  DynamicJsonDocument doc;
+  DynamicJsonDocument doc(4096);
   JsonArray array = doc.to<JsonArray>();
 
   SECTION("int") {
@@ -51,7 +51,7 @@ TEST_CASE("JsonArray::add()") {
 #endif
 
   SECTION("nested array") {
-    DynamicJsonDocument doc2;
+    DynamicJsonDocument doc2(4096);
     JsonArray arr = doc2.to<JsonArray>();
 
     array.add(arr);
@@ -62,7 +62,7 @@ TEST_CASE("JsonArray::add()") {
   }
 
   SECTION("nested object") {
-    DynamicJsonDocument doc2;
+    DynamicJsonDocument doc2(4096);
     JsonObject obj = doc2.to<JsonObject>();
 
     array.add(obj);
@@ -74,7 +74,7 @@ TEST_CASE("JsonArray::add()") {
 
   SECTION("array subscript") {
     const char* str = "hello";
-    DynamicJsonDocument doc2;
+    DynamicJsonDocument doc2(4096);
     JsonArray arr = doc2.to<JsonArray>();
     arr.add(str);
 
@@ -85,7 +85,7 @@ TEST_CASE("JsonArray::add()") {
 
   SECTION("object subscript") {
     const char* str = "hello";
-    DynamicJsonDocument doc2;
+    DynamicJsonDocument doc2(4096);
     JsonObject obj = doc2.to<JsonObject>();
     obj["x"] = str;
 
@@ -102,13 +102,13 @@ TEST_CASE("JsonArray::add()") {
 
   SECTION("should duplicate char*") {
     array.add(const_cast<char*>("world"));
-    const size_t expectedSize = JSON_ARRAY_SIZE(1) + 6;
+    const size_t expectedSize = JSON_ARRAY_SIZE(1) + JSON_STRING_SIZE(6);
     REQUIRE(expectedSize == doc.memoryUsage());
   }
 
   SECTION("should duplicate std::string") {
     array.add(std::string("world"));
-    const size_t expectedSize = JSON_ARRAY_SIZE(1) + 6;
+    const size_t expectedSize = JSON_ARRAY_SIZE(1) + JSON_STRING_SIZE(6);
     REQUIRE(expectedSize == doc.memoryUsage());
   }
 
@@ -120,19 +120,19 @@ TEST_CASE("JsonArray::add()") {
 
   SECTION("should duplicate serialized(char*)") {
     array.add(serialized(const_cast<char*>("{}")));
-    const size_t expectedSize = JSON_ARRAY_SIZE(1) + 2;
+    const size_t expectedSize = JSON_ARRAY_SIZE(1) + JSON_STRING_SIZE(2);
     REQUIRE(expectedSize == doc.memoryUsage());
   }
 
   SECTION("should duplicate serialized(std::string)") {
     array.add(serialized(std::string("{}")));
-    const size_t expectedSize = JSON_ARRAY_SIZE(1) + 2;
+    const size_t expectedSize = JSON_ARRAY_SIZE(1) + JSON_STRING_SIZE(2);
     REQUIRE(expectedSize == doc.memoryUsage());
   }
 
   SECTION("should duplicate serialized(std::string)") {
     array.add(serialized(std::string("\0XX", 3)));
-    const size_t expectedSize = JSON_ARRAY_SIZE(1) + 3;
+    const size_t expectedSize = JSON_ARRAY_SIZE(1) + JSON_STRING_SIZE(3);
     REQUIRE(expectedSize == doc.memoryUsage());
   }
 }

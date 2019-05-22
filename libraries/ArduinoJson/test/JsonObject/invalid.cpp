@@ -1,5 +1,5 @@
 // ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2018
+// Copyright Benoit Blanchon 2014-2019
 // MIT License
 
 #include <ArduinoJson.h>
@@ -15,7 +15,7 @@ TEST_CASE("JsonObject::invalid()") {
   }
 
   SECTION("AddFails") {
-    obj.set("hello", "world");
+    obj["hello"] = "world";
     REQUIRE(0 == obj.size());
   }
 

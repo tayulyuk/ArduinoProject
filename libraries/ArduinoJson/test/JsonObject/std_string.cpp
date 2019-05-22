@@ -1,5 +1,5 @@
 // ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2018
+// Copyright Benoit Blanchon 2014-2019
 // MIT License
 
 #include <ArduinoJson.h>
@@ -11,7 +11,7 @@ static void eraseString(std::string &str) {
 }
 
 TEST_CASE("std::string") {
-  DynamicJsonDocument doc;
+  DynamicJsonDocument doc(4096);
 
   SECTION("operator[]") {
     char json[] = "{\"key\":\"value\"}";
@@ -29,70 +29,6 @@ TEST_CASE("std::string") {
     JsonObject obj = doc.as<JsonObject>();
 
     REQUIRE(std::string("value") == obj[std::string("key")]);
-  }
-
-  SECTION("set(key)") {
-    JsonObject obj = doc.to<JsonObject>();
-    std::string key("hello");
-    obj.set(key, "world");
-    eraseString(key);
-    REQUIRE(std::string("world") == obj["hello"]);
-  }
-
-  SECTION("set(value)") {
-    JsonObject obj = doc.to<JsonObject>();
-    std::string value("world");
-    obj.set("hello", value);
-    eraseString(value);
-    REQUIRE(std::string("world") == obj["hello"]);
-  }
-
-  SECTION("set(key,value)") {
-    JsonObject obj = doc.to<JsonObject>();
-    std::string key("hello");
-    std::string value("world");
-    obj.set(key, value);
-    eraseString(key);
-    eraseString(value);
-    REQUIRE(std::string("world") == obj["hello"]);
-  }
-
-  SECTION("set(JsonArraySubscript)") {
-    JsonObject obj = doc.to<JsonObject>();
-    DynamicJsonDocument doc2;
-    JsonArray arr = doc2.to<JsonArray>();
-    arr.add("world");
-
-    obj.set(std::string("hello"), arr[0]);
-
-    REQUIRE(std::string("world") == obj["hello"]);
-  }
-
-  SECTION("set(JsonObjectSubscript)") {
-    JsonObject obj = doc.to<JsonObject>();
-    DynamicJsonDocument doc2;
-    JsonObject obj2 = doc2.to<JsonObject>();
-    obj2.set("x", "world");
-
-    obj.set(std::string("hello"), obj2["x"]);
-
-    REQUIRE(std::string("world") == obj["hello"]);
-  }
-
-  SECTION("get<T>()") {
-    char json[] = "{\"key\":\"value\"}";
-    deserializeJson(doc, json);
-    JsonObject obj = doc.as<JsonObject>();
-
-    REQUIRE(std::string("value") == obj.get<const char *>(std::string("key")));
-  }
-
-  SECTION("is<T>()") {
-    char json[] = "{\"key\":\"value\"}";
-    deserializeJson(doc, json);
-    JsonObject obj = doc.as<JsonObject>();
-
-    REQUIRE(true == obj.is<const char *>(std::string("key")));
   }
 
   SECTION("createNestedObject()") {

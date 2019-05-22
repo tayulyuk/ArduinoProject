@@ -1,5 +1,5 @@
 // ArduinoJson - arduinojson.org
-// Copyright Benoit Blanchon 2014-2018
+// Copyright Benoit Blanchon 2014-2019
 // MIT License
 
 #include <ArduinoJson.h>
@@ -7,7 +7,7 @@
 #include <string>
 
 TEST_CASE("JsonObject::size()") {
-  DynamicJsonDocument doc;
+  DynamicJsonDocument doc(4096);
   JsonObject obj = doc.to<JsonObject>();
 
   SECTION("initial size is zero") {
@@ -15,12 +15,12 @@ TEST_CASE("JsonObject::size()") {
   }
 
   SECTION("increases when values are added") {
-    obj.set("hello", 42);
+    obj["hello"] = 42;
     REQUIRE(1 == obj.size());
   }
 
   SECTION("decreases when values are removed") {
-    obj.set("hello", 42);
+    obj["hello"] = 42;
     obj.remove("hello");
     REQUIRE(0 == obj.size());
   }
