@@ -13,8 +13,8 @@ const char* mqtt_server = "119.205.235.214"; //브로커 주소
 
 //const int sleepSeconds = 300; //to save power i send the ESP to sleep
 
-const char* outTopic = "ModelTempHumi/result"; // 밖으로 내보내는 토픽.
-const char* clientName = "700303Client";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+const char* outTopic = "1029931969033/temp1"; // 밖으로 내보내는 토픽.
+const char* clientName = "1029931969033";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
 const char* setWifiManagerName = "Auto_Model_Temp_Humi_Connect_AP";
 
 WiFiClient espClient;
@@ -55,7 +55,6 @@ void setup()
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
-  //wifiManager.startConfigPortal("OnDemandAP");
 } 
 
 // 통신에서 문자가 들어오면 이 함수의 payload 배열에 저장된다.
@@ -67,22 +66,22 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
+ //   Serial.print("Attempting MQTT connection...");
     // Attempt to connect
     if (client.connect(clientName)) {
-      Serial.println("connected");
+      /*
+//      Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish(outTopic, "Reconnected");
-      // ... and resubscribe    
-      
-     client.subscribe("ModelTempHumi/PleaseTempHumi");    
-        
+//      client.publish(outTopic, "Reconnected");    
+//     client.subscribe("ModelTempHumi/PleaseTempHumi");    
+        */
+        // 이공간은 절대 비워둬라.
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
       // Wait 1 seconds before retrying
-      delay(1000);
+      delay(5000);
     }
   }
 }

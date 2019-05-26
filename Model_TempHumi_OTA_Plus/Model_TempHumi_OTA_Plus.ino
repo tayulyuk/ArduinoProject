@@ -15,9 +15,12 @@
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 
 const char* mqtt_server = "119.205.235.214"; //브로커 주소
-const char* outTopic = "ModelTempHumi/result"; // 밖으로 내보내는 토픽.
-const char* clientName = "700303Client";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
-const char* setWifiManagerName = "Auto_Model_TempHumi_OTA_Connect_AP";
+const char* outTopic = "1029931969033/temp1"; // 밖으로 내보내는 토픽.
+//ModelTempHumi/result
+//1029931969033/temp1
+const char* clientName = "1029931969033Temp1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+//hagabi3class
+const char* setWifiManagerName = "Auto_1029931969033_AP";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -104,16 +107,18 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
+  //  Serial.print("Attempting MQTT connection...");  
     if (client.connect(clientName)) {
-      Serial.println("connected"); //-----------------------------------------
+      /*
+   //   Serial.println("connected"); //-----------------------------------------
       // Once connected, publish an announcement...
-      client.publish(outTopic, "Reconnected");
+     // client.publish(outTopic, "Reconnected");
       // ... and resubscribe    
       
      //client.subscribe("ModelTempHumi/PleaseTempHumi");    
-        
+        */
+
+        // 온도 측정에선 이공간을 비워 둬라.
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -178,13 +183,6 @@ void loop()
     sendTemperature();
   }
 
-  //test
-  /*
-   digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(1000);                       // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-  delay(1000);
-*/
   //OTA
   ArduinoOTA.handle();
 }
