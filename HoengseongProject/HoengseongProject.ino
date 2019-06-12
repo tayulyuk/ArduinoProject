@@ -418,8 +418,8 @@ void parseCommand(String com ,int orderNum)
   }
   else if(part1.equalsIgnoreCase("pinIdle") )
   {
-      digitalWrite(pin, LOW);  //+
-      digitalWrite(pin + 1, LOW);  //+      
+      digitalWrite(pin, HIGH);  // high로 해야 꺼짐상태가 됨.( % 켜짐이 되면 장시간 사용으로 릴레이 수명이 단축된다)
+      digitalWrite(pin + 1, HIGH);  // high로 해야 꺼짐상태가 됨.( % 켜짐이 되면 장시간 사용으로 릴레이 수명이 단축된다)
   }
   else if(part1.equalsIgnoreCase("pinOff"))
   {   
