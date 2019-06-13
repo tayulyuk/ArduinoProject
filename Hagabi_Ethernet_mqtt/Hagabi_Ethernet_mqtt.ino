@@ -33,11 +33,17 @@ IPAddress myDns(192, 168, 0, 1);
 EthernetClient ethernetClient;
 PubSubClient client;
 
+const char* ethernetClientName = "hagabi1dong";  // 각 현장마다 다르게 한다.
+const char* serverIp = "119.205.235.214";
+const char* outTopic = "Hagabi/result";
+const char* outTopicEachControl = "Hagabi/1/eachControl"; //1동 제어  
+
 String sendMessage = "";
 String inString ="";
+char msg[200];
 
 //버튼 값들 저장.
-String button1;// 상태(on.off.idle) ,오토 채크유무.
+String button1;// 상태(on.off.idle) 
 String button2;
 String button3;
 String button4;
@@ -74,11 +80,6 @@ String isAutoButton11 ="";
 String isAutoButton12 ="";
 String isAutoButton13 ="";
 String isAutoButton14 ="";
-
-
-const char* ethernetClientName = "hagabi1dong";  // 각 현장마다 다르게 한다.
-const char* serverIp = "119.205.235.214";
-const char* outTopic = "hagabi1dong/result";
 
 void parseCommand(String com);
 /*
@@ -123,10 +124,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("] ");//--------------------------------------------------
 
 // payload로 들어온 문자를 정수로 바꾸기 위해 String inString에 저장후에 
-  for (int i = 0; i < length; i++) {
-    if(i <= 6)
-    {}
-    else
+  for (int i = 0; i < length; i++) {    
       inString += (char)payload[i];     
   } 
   // Serial.print("order :");
@@ -134,21 +132,23 @@ void callback(char* topic, byte* payload, unsigned int length) {
    String topics = String(topic);
 
     // 오토 실행은 [1]/[2] 로 실행한다.
-   if(topics == "autoControlToTemp") //오토 켤때 사용
+   if(topics == "hagabi1dong/autoControlToTemp") //오토 켤때 사용
       parsingAutoMessage(inString); // 상태 저장 및 처음 오토 실행.[1]
-   else  if(topics == "autoControlToTempOff") //오토 끌때 사용.
+   else  if(topics == "hagabi1dong/autoControlToTempOff") //오토 끌때 사용.
       parsingAutoMessageOff(inString);
-   else if(topics == "plusControl")
+   else if(topics == "hagabi1dong/plusControl")
       parsingPlusMessage(inString);
-   else if(topics == "currentTemp1") // 1동의 온도 저장과  auto 온도 개폐제어를 주기적으로 한다(온도 받을때 마다.) [2]
+   else if(topics == "hagabi1dong/currentTemp1") // 1동의 온도 저장과  auto 온도 개폐제어를 주기적으로 한다(온도 받을때 마다.) [2]
       parsingWorkTemp(inString);             
-   else if(topics == "eachControl")// 개별 제어   
+   else if(topics == "hagabi1dong/eachControl")// 개별 제어   
       parsingEachMessage(topics , inString); 
    else
-     Serial.println("unknown  massage --  line: 142");
+     Serial.println("unknown  massage --  line: 145");
+
+     inString = ""; //초기화.
 }
 
-//전체 오토 상태 & 개별적인 오토 상태 (이상태로 패킷을 만들어라  TODO.)
+//전체 오토 상태 & 개별적인 오토 상태 (이상태로 패킷을 만들어라  TODO. unity:PacketAutoInfo)
 void inputIsAutoButtonState(JsonObject& root)
 { 
   char * bs = root["isAutoTemp"];    
@@ -263,15 +263,16 @@ void parsingAutoMessage(String inString)
   
 }
 
-void parsingAutoMessageOff(String inString)
+void parsingAutoMessageOff(String inString) // TODO. 패킷 만들자. unity side:PacketAutoOff
 {
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(inString);
   char * bs = root["isAutoTemp"];    
   isAutoTemp = bs;
 }
-void parsingEachMessage(String topics,String inString) //TODO. 형식으로 패킷만들어라
+void parsingEachMessage(String topics,String inString) //TODO. 형식으로 패킷만들어라 unity side: PacketEachControl
 {
+  int bufferSize = 200;
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(inString);   
 
@@ -279,10 +280,18 @@ void parsingEachMessage(String topics,String inString) //TODO. 형식으로 패�
   String buttonState = s;
 
   char *v = root["buttonNum"];
-  int buttonNum = v;
+  int buttonNum = atoi(v);
   
-  parseCommand(buttonState,buttonNum);
-   
+  if( parseCommand(buttonState,buttonNum)) // 에러없이 작동 잘했다면 클라이언트로 전송.
+  {    
+    StaticJsonBuffer<200> sendjsonBuffer;
+    JsonObject& sendRoot = sendjsonBuffer.createObject();
+    sendRoot["buttonState"] = root["buttonState"];
+    sendRoot["buttonNum"] = root["buttonNum"];    
+    sendRoot.printTo(msg);    
+    
+    client.publish(outTopicEachControl, msg,true);       
+  }   
 }
 /*
 void parsingTemp(String msg)
@@ -531,11 +540,11 @@ void reconnect() {
     if (client.connect(ethernetClientName)) 
     {
   // Serial.println("connected");//---------------------------------------------   
-      client.subscribe("autoControlToTemp");
-      client.subscribe("autoControlToTempOff");
-      client.subscribe("plusControl");
-      client.subscribe("eachControl");   
-      client.subscribe("currentTemp1");
+      client.subscribe("hagabi1dong/autoControlToTemp");
+      client.subscribe("hagabi1dong/autoControlToTempOff");
+      client.subscribe("hagabi1dong/plusControl");
+      client.subscribe("hagabi1dong/eachControl");   
+      client.subscribe("hagabi1dong/currentTemp1");
       client.subscribe("hagabi1dong/ping"); 
     }
     else 
@@ -598,37 +607,45 @@ void loop() {
     reconnect();
   }  
   client.loop(); 
-  //루푸에 자동 온도 실시간 검색을 하자... 내일하자.
 }
 
 
 //프로토콜 pinOn,pinIdle,pinOff     (명령 + " " + 핀번호)
-void parseCommand(String buttonState ,int orderNum)
+bool parseCommand(String buttonState ,int orderNum)
 {
+  bool isActionOk = false;
   Serial.print("buttonState : ");//-------------------------------------------------------------------------------------------
   Serial.println(buttonState); 
+
+  Serial.print("orderNum : ");//-------------------------------------------------------------------------------------------
+  Serial.println(orderNum); 
   
   int pin = changeNum(orderNum); 
   
   if(buttonState.equalsIgnoreCase("pinOn"))
   {   
     digitalWrite(pin, LOW);  //+   
-    digitalWrite(pin + 1, HIGH); //- 
+    digitalWrite(pin + 1, HIGH); //-     
+    isActionOk = true;
   }
   else if(buttonState.equalsIgnoreCase("pinIdle") )
   {
       digitalWrite(pin, HIGH);  // high로 해야 꺼짐상태가 됨.( % 켜짐(LOW도 꺼짐상태가 되나 장시간 사용으로 릴레이 수명이 단축된다)
       digitalWrite(pin + 1, HIGH);  // high로 해야 꺼짐상태가 됨.( % 켜짐(LOW도 꺼짐상태가 되나 장시간 사용으로 릴레이 수명이 단축된다)
+      isActionOk = true;
   }
   else if(buttonState.equalsIgnoreCase("pinOff"))
   {   
     digitalWrite(pin, HIGH);//-   
     digitalWrite(pin +1 , LOW);//+  
+    isActionOk = true;
   }
   else{
-    Serial.println("menualy -------line:627 ");
+    Serial.println("menualy -------line:636 ");
     Serial.println(inString);
+    isActionOk = false;
   } 
+  return isActionOk;
 }
 
 //하우스 번호(클라이언트)에 마췄다.
@@ -671,8 +688,7 @@ void AllSetOutPutMode()
 {
   for(int i = 22; i <= 49 ; i++)
   {    
-      pinMode(i, OUTPUT);     
-      Serial.println(i);       
+      pinMode(i, OUTPUT);
   }
 }
 
