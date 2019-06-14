@@ -58,13 +58,14 @@ String button12;
 String button13;
 String button14;
 
-String autoControlTemp; // 전체 자동온도설정(채크한것만)    //min max 1 2 3 4  순서.
+//min max 1 2 3 4  순서.
+String isAutoTemp ="";  // 온도에 따른 오토제어 상태 중인가  실행: on  정지:off
+String isButtonsActionState = ""; // 묶음 명령 버튼 상태 저장.
+
 String minTemp;
 String maxTemp;
 String curTemp; // 실시간으로 받는 온도.
 String curHumi; // 습도.
-String isAutoTemp="";  // 온도에 따른 오토제어 상태 중인가  실행: on  정지:off
-String isButtonsActionStact = ""; // 묶음 명령 버튼 상태 저장.
 
 String isAutoButton1 ="";// 현재  오토 & 묶음 실행 상태인가   실행: on  정지:off
 String isAutoButton2 ="";
@@ -78,44 +79,11 @@ String isAutoButton9 ="";
 String isAutoButton10 ="";
 String isAutoButton11 ="";
 String isAutoButton12 ="";
-String isAutoButton13 ="";
-String isAutoButton14 ="";
+//String isAutoButton13 =""; //환풍기는 뺀다.
+//String isAutoButton14 ="";
 
 void parseCommand(String com);
-/*
-String sortMessage()
-{
-  String msg = "";
-  msg ="|b1=";
-  msg += button1;
-  msg +="|b2=";
-  msg += button2;
-  msg +="|b3=";
-  msg += button3;
-  msg +="|b4=";
-  msg += button4;
-  // 오토 중이냐 유무. - 오토 설정에 대한 정보.
-  msg +="|at="; //auto temp
-  msg += isAutoTemp;
 
-  msg +="|minT=";
-  msg += minTemp;
-  msg +="|maxT=";
-  msg += maxTemp;
-  
-  msg +="|isAB1="; //isAutoButton1
-  msg += isAutoButton1;
-  msg +="|isAB2="; //isAutoButton2
-  msg += isAutoButton2 ;
-  msg +="|isAB3=";//isAutoButton3
-  msg += isAutoButton3;
-  msg +="|isAB4=";//isAutoButton4
-  msg += isAutoButton4;
-  msg +="|";
-  msg +="\n"; // 유니티에서 읽음. 없으면 못읽음.
-  return msg;
-}
-*/
 // 통신에서 문자가 들어오면 이 함수의 payload 배열에 저장된다.
 void callback(char* topic, byte* payload, unsigned int length) { 
  
@@ -153,19 +121,24 @@ void inputIsAutoButtonState(JsonObject& root)
 { 
   char * bs = root["isAutoTemp"];    
   isAutoTemp = bs;
-
+  Serial.print("isAutoTemp: ");
+Serial.println(isAutoTemp);
    bs = root["isButtonsActionState"];  // 올릴 건지 내릴건지
-  isButtonsActionStact = bs;
-
+  isButtonsActionState = bs;
+ Serial.print("isButtonsActionState: ");
+Serial.println(isButtonsActionState);
   bs = root["minTemp"];
   minTemp = bs;
-
+ Serial.print("minTemp: ");
+Serial.println(minTemp);
    bs = root["maxTemp"];
   maxTemp = bs;  
-    
+     Serial.print("maxTemp: ");
+Serial.println(maxTemp);
   bs = root["isAutoButton1"];    
   isAutoButton1 = bs;
-  
+   Serial.print("isAutoButton1: ");
+Serial.println(isAutoButton1);
   bs = root["isAutoButton2"];    
   isAutoButton2 = bs;
 
@@ -199,11 +172,6 @@ void inputIsAutoButtonState(JsonObject& root)
    bs = root["isAutoButton12"];    
   isAutoButton12 = bs;
 
-  bs = root["isAutoButton13"];    
-  isAutoButton13 = bs;
-
-  bs = root["isAutoButton14"];    
-  isAutoButton14 = bs;
 }
 
 void parsingWorkTemp(String inString) // TODO. 패킷을 이형태로 만들어야 한다
@@ -226,29 +194,29 @@ void parsingPlusMessage(String inString)
   inputIsAutoButtonState(root);// 묶음 동작할 상태를 입력.
 
   if(isAutoButton1.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,1);
+    parseCommand(isButtonsActionState,1);
   if(isAutoButton2.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,2);
+    parseCommand(isButtonsActionState,2);
   if(isAutoButton3.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,3);
+    parseCommand(isButtonsActionState,3);
   if(isAutoButton4.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,4);
+    parseCommand(isButtonsActionState,4);
   if(isAutoButton5.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,5);
+    parseCommand(isButtonsActionState,5);
   if(isAutoButton6.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,6);
+    parseCommand(isButtonsActionState,6);
   if(isAutoButton7.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,7);
+    parseCommand(isButtonsActionState,7);
   if(isAutoButton8.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,8);
+    parseCommand(isButtonsActionState,8);
   if(isAutoButton9.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,9);
+    parseCommand(isButtonsActionState,9);
   if(isAutoButton10.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,10);
+    parseCommand(isButtonsActionState,10);
   if(isAutoButton11.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,11);
+    parseCommand(isButtonsActionState,11);
   if(isAutoButton12.equalsIgnoreCase("on"))
-    parseCommand(isButtonsActionStact,12);
+    parseCommand(isButtonsActionState,12);
 
     //TODO. 이쯤에서 클라이언트로 묶음 실행했다고 보내야한다.
 }
@@ -271,8 +239,7 @@ void parsingAutoMessageOff(String inString) // TODO. 패킷 만들자. unity sid
   isAutoTemp = bs;
 }
 void parsingEachMessage(String topics,String inString) //TODO. 형식으로 패킷만들어라 unity side: PacketEachControl
-{
-  int bufferSize = 200;
+{ 
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(inString);   
 
@@ -293,40 +260,7 @@ void parsingEachMessage(String topics,String inString) //TODO. 형식으로 패�
     client.publish(outTopicEachControl, msg,true);       
   }   
 }
-/*
-void parsingTemp(String msg)
-{
-   int ind1,ind2,ind3,ind4;
-      ind1 = msg.indexOf('=');      
-      ind2 = msg.indexOf('|', ind1+1 );       
-      ind3 = msg.indexOf('=', ind2+1 );      
-      ind4 = msg.indexOf('|', ind3+1 );      
-     
-     curTemp = msg.substring(ind1+1, ind2);
-     curHumi =  msg.substring(ind3+1 ,ind4);      
-}
 
-void autoParsing(String msg)
-{
-  int ind1,ind2,ind3,ind4,ind5,ind6,ind7;
-
-      ind1 = msg.indexOf('|');
-      ind2 = msg.indexOf('|', ind1+1 ); 
-      ind3 = msg.indexOf('|', ind2+1 );
-      ind4 = msg.indexOf('|', ind3+1 );
-      ind5 = msg.indexOf('|', ind4+1 );
-      ind6 = msg.indexOf('|', ind5+1 );
-      ind7 = msg.indexOf('|', ind6+1 );
-       
-     isAutoTemp = msg.substring(0, ind1);     
-     minTemp = msg.substring(ind1+1, ind2);
-     maxTemp = msg.substring(ind2+1, ind3);
-     isAutoButton1 = msg.substring(ind3+1 ,ind4);  
-     isAutoButton2 = msg.substring(ind4+1 ,ind5);
-     isAutoButton3 = msg.substring(ind5+1 ,ind6); 
-     isAutoButton4 = msg.substring(ind6+1, ind7);  
-}
-*/
 //min max 1 2 3 4  순서.
 void autoTempControl()
 { 
@@ -641,7 +575,7 @@ bool parseCommand(String buttonState ,int orderNum)
     isActionOk = true;
   }
   else{
-    Serial.println("menualy -------line:636 ");
+    Serial.println("menualy -------line:612 ");
     Serial.println(inString);
     isActionOk = false;
   } 
