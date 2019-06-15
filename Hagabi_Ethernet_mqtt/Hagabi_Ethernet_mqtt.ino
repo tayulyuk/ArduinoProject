@@ -79,8 +79,7 @@ String isAutoButton9 ="";
 String isAutoButton10 ="";
 String isAutoButton11 ="";
 String isAutoButton12 ="";
-//String isAutoButton13 =""; //환풍기는 뺀다.
-//String isAutoButton14 ="";
+ //환풍기는 뺀다.
 
 void parseCommand(String com);
 
@@ -120,25 +119,16 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void inputIsAutoButtonState(JsonObject& root)
 { 
   char * bs = root["isAutoTemp"];    
-  isAutoTemp = bs;
-  Serial.print("isAutoTemp: ");
-Serial.println(isAutoTemp);
+  isAutoTemp = bs; 
    bs = root["isButtonsActionState"];  // 올릴 건지 내릴건지
   isButtonsActionState = bs;
- Serial.print("isButtonsActionState: ");
-Serial.println(isButtonsActionState);
   bs = root["minTemp"];
-  minTemp = bs;
- Serial.print("minTemp: ");
-Serial.println(minTemp);
+  minTemp = bs; 
    bs = root["maxTemp"];
-  maxTemp = bs;  
-     Serial.print("maxTemp: ");
-Serial.println(maxTemp);
+  maxTemp = bs;     
   bs = root["isAutoButton1"];    
   isAutoButton1 = bs;
-   Serial.print("isAutoButton1: ");
-Serial.println(isAutoButton1);
+  
   bs = root["isAutoButton2"];    
   isAutoButton2 = bs;
 
@@ -176,7 +166,7 @@ Serial.println(isAutoButton1);
 
 void parsingWorkTemp(String inString) // TODO. 패킷을 이형태로 만들어야 한다
 {
-  StaticJsonBuffer<200> jsonBuffer;  // 용량이 적어서 줄여봤다.
+  StaticJsonBuffer<100> jsonBuffer;  // 용량이 적어서 줄여봤다.
   JsonObject& root = jsonBuffer.parseObject(inString);
   const char * v = root["curTemp"];
   curTemp = v;
@@ -189,7 +179,7 @@ void parsingWorkTemp(String inString) // TODO. 패킷을 이형태로 만들어�
 // 묶음 제어 ( ex:   1,4,6 번 개폐기 작동 ...)
 void parsingPlusMessage(String inString)
 {
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonBuffer<500> jsonBuffer; // 받는 사이즈 440 정도.
   JsonObject& root = jsonBuffer.parseObject(inString);
   inputIsAutoButtonState(root);// 묶음 동작할 상태를 입력.
 
@@ -579,9 +569,45 @@ bool parseCommand(String buttonState ,int orderNum)
     Serial.println(inString);
     isActionOk = false;
   } 
+
+  if(isActionOk)// 작동하고 결과를 각 버튼에 저장한다.
+    setButtonValue(pin,buttonState); 
+  
   return isActionOk;
 }
 
+//작동하고 난후 결과 값을 입력.
+void setButtonValue(int pinNum,String buttonState)
+{
+  if(pinNum == 1)
+  button1 = buttonState;
+  if(pinNum == 2)
+  button2 = buttonState;
+  if(pinNum == 3)
+  button3 = buttonState;
+  if(pinNum == 4)
+  button4 = buttonState;
+  if(pinNum == 5)
+  button5 = buttonState;
+  if(pinNum == 6)
+  button6 = buttonState;
+  if(pinNum == 7)
+  button7 = buttonState;
+  if(pinNum == 8)
+  button8 = buttonState;
+  if(pinNum == 9)
+  button9 = buttonState;
+  if(pinNum == 10)
+  button10 = buttonState;
+  if(pinNum == 11)
+  button11 = buttonState;
+  if(pinNum == 12)
+  button12 = buttonState;
+  if(pinNum == 13)
+  button13 = buttonState;
+  if(pinNum == 14)
+  button14 = buttonState;
+}
 //하우스 번호(클라이언트)에 마췄다.
 int changeNum(int orderNum)
 {
