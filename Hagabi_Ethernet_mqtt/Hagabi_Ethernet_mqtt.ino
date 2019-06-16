@@ -37,9 +37,10 @@ const char* ethernetClientName = "hagabi1dong";  // 각 현장마다 다르게 �
 const char* serverIp = "119.205.235.214";
 const char* outTopic = "Hagabi/result";
 const char* outTopicEachControl = "Hagabi/1/eachControl"; //1동 제어  
-
+const char* outTopicPlusControl = "Hagabi/1/plusControl"; //1동 plus control
 String sendMessage = "";
 String inString ="";
+char msg500[500];
 char msg[200];
 
 //버튼 값들 저장.
@@ -208,9 +209,13 @@ void parsingPlusMessage(String inString)
   if(isAutoButton12.equalsIgnoreCase("on"))
     parseCommand(isButtonsActionState,12);
 
-    //TODO. 이쯤에서 클라이언트로 묶음 실행했다고 보내야한다.
+    //TODO. 이쯤에서 클라이언트로 묶음 실행했다고 보내야한다.   
+   String msg = getAutoButtonState(root);
+    char* msgChar = msg.c_str();
+    client.publish(outTopicPlusControl, msgChar,true);    
 }
 
+//오토 켜기 전용.
 void parsingAutoMessage(String inString)
 {
   StaticJsonBuffer<200> jsonBuffer;
@@ -221,6 +226,7 @@ void parsingAutoMessage(String inString)
   
 }
 
+//오토 끄기 전용.
 void parsingAutoMessageOff(String inString) // TODO. 패킷 만들자. unity side:PacketAutoOff
 {
   StaticJsonBuffer<200> jsonBuffer;
@@ -228,20 +234,21 @@ void parsingAutoMessageOff(String inString) // TODO. 패킷 만들자. unity sid
   char * bs = root["isAutoTemp"];    
   isAutoTemp = bs;
 }
+//스위치 한개씩 제어.
 void parsingEachMessage(String topics,String inString) //TODO. 형식으로 패킷만들어라 unity side: PacketEachControl
 { 
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonBuffer<100> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(inString);   
 
   char *s = root["buttonState"];
   String buttonState = s;
 
   char *v = root["buttonNum"];
-  int buttonNum = atoi(v);
+  int buttonNum = atoi(v); 
   
   if( parseCommand(buttonState,buttonNum)) // 에러없이 작동 잘했다면 클라이언트로 전송.
   {    
-    StaticJsonBuffer<200> sendjsonBuffer;
+    StaticJsonBuffer<100> sendjsonBuffer;
     JsonObject& sendRoot = sendjsonBuffer.createObject();
     sendRoot["buttonState"] = root["buttonState"];
     sendRoot["buttonNum"] = root["buttonNum"];    
@@ -250,7 +257,30 @@ void parsingEachMessage(String topics,String inString) //TODO. 형식으로 패�
     client.publish(outTopicEachControl, msg,true);       
   }   
 }
-
+String getAutoButtonState(JsonObject& root)
+{
+  char msg[500];
+   StaticJsonBuffer<500> sendjsonBuffer;
+    JsonObject& sendRoot = sendjsonBuffer.createObject();   
+    sendRoot["isAutoTemp"] = root["isAutoTemp"];
+    sendRoot["isButtonsActionState"] = root["isButtonsActionState"];    
+    sendRoot["minTemp"] = root["minTemp"];
+    sendRoot["maxTemp"] = root["maxTemp"]; 
+    sendRoot["isAutoButton1"] = root["isAutoButton1"];
+    sendRoot["isAutoButton2"] = root["isAutoButton2"];    
+    sendRoot["isAutoButton3"] = root["isAutoButton3"];
+    sendRoot["isAutoButton4"] = root["isAutoButton4"]; 
+    sendRoot["isAutoButton5"] = root["isAutoButton5"];
+    sendRoot["isAutoButton6"] = root["isAutoButton6"];    
+    sendRoot["isAutoButton7"] = root["isAutoButton7"];
+    sendRoot["isAutoButton8"] = root["isAutoButton8"];   
+    sendRoot["isAutoButton9"] = root["isAutoButton9"];
+    sendRoot["isAutoButton10"] = root["isAutoButton10"];    
+    sendRoot["isAutoButton11"] = root["isAutoButton11"];
+    sendRoot["isAutoButton12"] = root["isAutoButton12"];      
+    sendRoot.printTo(msg);    
+   return msg;
+}
 //min max 1 2 3 4  순서.
 void autoTempControl()
 { 
