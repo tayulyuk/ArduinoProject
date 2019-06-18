@@ -36,7 +36,7 @@ PubSubClient client;
 const char* ethernetClientName = "hagabi1dong";  // 각 현장마다 다르게 한다.
 
 const char* serverIp = "119.205.235.214";
-const char* outTopic = "Hagabi/result";
+//const char* outTopic = "Hagabi/result";
 const char* outTopicEachControl = "Hagabi/1/eachControl"; //1동 제어  
 const char* outTopicPlusControl = "Hagabi/1/plusControl"; //1동 plus control
 const char* outTopicAutoControl = "Hagabi/1/autoControl"; //1동 auto control
@@ -102,9 +102,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
     // 오토 실행은 [1]/[2] 로 실행한다.
    if(topics == "hagabi1dong/autoControl") //오토 켤때 사용
-      parsingAutoMessage(inString); // 상태 저장 및 처음 오토 실행.[1]
-   else  if(topics == "hagabi1dong/autoControlOff") //오토 끌때 사용.
-      parsingAutoMessageOff(inString);
+      parsingAutoMessage(inString); // 상태 저장 및 처음 오토 실행.[1]   
    else if(topics == "hagabi1dong/plusControl")
       parsingPlusMessage(inString);
    else if(topics == "hagabi1dong/currentTempHumi") // 1동의 온도 저장과  auto 온도 개폐제어를 주기적으로 한다(온도 받을때 마다.) [2]
@@ -232,14 +230,7 @@ void parsingAutoMessage(String inString)
     client.publish(outTopicAutoControl, msgChar,true);    
 }
 
-//오토 끄기 전용.
-void parsingAutoMessageOff(String inString) // TODO. 패킷 만들자. unity side:PacketAutoOff
-{
-  StaticJsonBuffer<100> jsonBuffer;
-  JsonObject& root = jsonBuffer.parseObject(inString);
-  char * bs = root["isAutoTemp"];    
-  isAutoTemp = bs;
-}
+
 //스위치 한개씩 제어.
 void parsingEachMessage(String topics,String inString) //TODO. 형식으로 패킷만들어라 unity side: PacketEachControl
 { 
