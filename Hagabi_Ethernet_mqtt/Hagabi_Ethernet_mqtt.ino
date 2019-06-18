@@ -39,12 +39,9 @@ const char* outTopic = "Hagabi/result";
 const char* outTopicEachControl = "Hagabi/1/eachControl"; //1동 제어  
 const char* outTopicPlusControl = "Hagabi/1/plusControl"; //1동 plus control
 const char* outTopicAutoControl = "Hagabi/1/autoControl"; //1동 auto control
-const char* outTopicAutoState = "Hagabi/1/autoState"; //1동 auto control
 
 String sendMessage = "";
 String inString ="";
-char msg500[500];
-char msg[200];
 
 //버튼 값들 저장.
 String button1;// 상태(on.off.idle) 
@@ -112,9 +109,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
    else if(topics == "hagabi1dong/currentTemp1") // 1동의 온도 저장과  auto 온도 개폐제어를 주기적으로 한다(온도 받을때 마다.) [2]
       parsingWorkTemp(inString);             
    else if(topics == "hagabi1dong/eachControl")// 개별 제어   
-      parsingEachMessage(topics , inString); 
-   else if(topics == "hagabi1dong/autoState")// 단순 오토 정보만 주고 받음.
-      parsingAutoState(inString); 
+      parsingEachMessage(topics , inString);    
    else
      Serial.println("unknown  massage --  line: 145");
 
@@ -170,22 +165,7 @@ void inputIsAutoButtonState(JsonObject& root)
 
 }
 
-//단순히 오토 정보만 보내 준다.
-void parsingAutoState(String inString)
-{
-  if(inString.equalsIgnoreCase("getAutoState"))
-  { 
-    Serial.println("??? why not?");
-    char localMsg[100];
-    StaticJsonBuffer<100> jsonBuffer;  
-    JsonObject& root = jsonBuffer.createObject();  
-    root["AutoState"]= isAutoTemp.c_str(); 
-    root.printTo(localMsg);  
-    client.publish(outTopicAutoState, localMsg,true); 
-  }
-  else
-    Serial.println("order error   line :184");
-}
+
 void parsingWorkTemp(String inString) // TODO. 패킷을 이형태로 만들어야 한다
 {
   StaticJsonBuffer<100> jsonBuffer;  // 용량이 적어서 줄여봤다.
@@ -273,6 +253,7 @@ void parsingEachMessage(String topics,String inString) //TODO. 형식으로 패�
   
   if( parseCommand(buttonState,buttonNum)) // 에러없이 작동 잘했다면 클라이언트로 전송.
   {    
+    char msg[100];
     StaticJsonBuffer<100> sendjsonBuffer;
     JsonObject& sendRoot = sendjsonBuffer.createObject();
     sendRoot["buttonState"] = root["buttonState"];
