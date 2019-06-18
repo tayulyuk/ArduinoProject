@@ -88,16 +88,16 @@ void parseCommand(String com);
 // 통신에서 문자가 들어오면 이 함수의 payload 배열에 저장된다.
 void callback(char* topic, byte* payload, unsigned int length) { 
  
-  Serial.print("Message arrived [");   //---------------------------------------------
-  Serial.print(topic);//------------------------------------------------------------------------ test 후 꼭 주석.
-  Serial.print("] ");//--------------------------------------------------
+  //Serial.print("Message arrived [");   //---------------------------------------------
+  //Serial.print(topic);//------------------------------------------------------------------------ test 후 꼭 주석.
+ // Serial.print("] ");//--------------------------------------------------
 
 // payload로 들어온 문자를 정수로 바꾸기 위해 String inString에 저장후에 
   for (int i = 0; i < length; i++) {    
       inString += (char)payload[i];     
   } 
   // Serial.print("order :");
-  Serial.println(inString);
+ // Serial.println(inString);
    String topics = String(topic);
 
     // 오토 실행은 [1]/[2] 로 실행한다.
