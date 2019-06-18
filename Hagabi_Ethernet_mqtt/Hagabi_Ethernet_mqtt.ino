@@ -38,6 +38,9 @@ const char* serverIp = "119.205.235.214";
 const char* outTopic = "Hagabi/result";
 const char* outTopicEachControl = "Hagabi/1/eachControl"; //1동 제어  
 const char* outTopicPlusControl = "Hagabi/1/plusControl"; //1동 plus control
+const char* outTopicAutoControl = "Hagabi/1/autoControl"; //1동 auto control
+const char* outTopicAutoState = "Hagabi/1/autoState"; //1동 auto control
+
 String sendMessage = "";
 String inString ="";
 char msg500[500];
@@ -100,9 +103,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
    String topics = String(topic);
 
     // 오토 실행은 [1]/[2] 로 실행한다.
-   if(topics == "hagabi1dong/autoControlToTemp") //오토 켤때 사용
+   if(topics == "hagabi1dong/autoControl") //오토 켤때 사용
       parsingAutoMessage(inString); // 상태 저장 및 처음 오토 실행.[1]
-   else  if(topics == "hagabi1dong/autoControlToTempOff") //오토 끌때 사용.
+   else  if(topics == "hagabi1dong/autoControlOff") //오토 끌때 사용.
       parsingAutoMessageOff(inString);
    else if(topics == "hagabi1dong/plusControl")
       parsingPlusMessage(inString);
@@ -110,13 +113,15 @@ void callback(char* topic, byte* payload, unsigned int length) {
       parsingWorkTemp(inString);             
    else if(topics == "hagabi1dong/eachControl")// 개별 제어   
       parsingEachMessage(topics , inString); 
+   else if(topics == "hagabi1dong/autoState")// 단순 오토 정보만 주고 받음.
+      parsingAutoState(inString); 
    else
      Serial.println("unknown  massage --  line: 145");
 
      inString = ""; //초기화.
 }
 
-//전체 오토 상태 & 개별적인 오토 상태 (이상태로 패킷을 만들어라  TODO. unity:PacketAutoInfo)
+//받은 오토 상태 저장. & 개별적인 오토 상태 ( unity:PacketAutoInfo) - 
 void inputIsAutoButtonState(JsonObject& root)
 { 
   char * bs = root["isAutoTemp"];    
@@ -165,6 +170,22 @@ void inputIsAutoButtonState(JsonObject& root)
 
 }
 
+//단순히 오토 정보만 보내 준다.
+void parsingAutoState(String inString)
+{
+  if(inString.equalsIgnoreCase("getAutoState"))
+  { 
+    Serial.println("??? why not?");
+    char localMsg[100];
+    StaticJsonBuffer<100> jsonBuffer;  
+    JsonObject& root = jsonBuffer.createObject();  
+    root["AutoState"]= isAutoTemp.c_str(); 
+    root.printTo(localMsg);  
+    client.publish(outTopicAutoState, localMsg,true); 
+  }
+  else
+    Serial.println("order error   line :184");
+}
 void parsingWorkTemp(String inString) // TODO. 패킷을 이형태로 만들어야 한다
 {
   StaticJsonBuffer<100> jsonBuffer;  // 용량이 적어서 줄여봤다.
@@ -209,7 +230,7 @@ void parsingPlusMessage(String inString)
   if(isAutoButton12.equalsIgnoreCase("on"))
     parseCommand(isButtonsActionState,12);
 
-    //TODO. 이쯤에서 클라이언트로 묶음 실행했다고 보내야한다.   
+   //다시 전송.
    String msg = getAutoButtonState(root);
     char* msgChar = msg.c_str();
     client.publish(outTopicPlusControl, msgChar,true);    
@@ -218,18 +239,22 @@ void parsingPlusMessage(String inString)
 //오토 켜기 전용.
 void parsingAutoMessage(String inString)
 {
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonBuffer<500> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(inString);
   inputIsAutoButtonState(root);// 오토 상태를 입력.
 
   autoTempControl();    
   
+  //다시 전송.
+   String msg = getAutoButtonState(root);
+    char* msgChar = msg.c_str();
+    client.publish(outTopicAutoControl, msgChar,true);    
 }
 
 //오토 끄기 전용.
 void parsingAutoMessageOff(String inString) // TODO. 패킷 만들자. unity side:PacketAutoOff
 {
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonBuffer<100> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(inString);
   char * bs = root["isAutoTemp"];    
   isAutoTemp = bs;
@@ -257,6 +282,8 @@ void parsingEachMessage(String topics,String inString) //TODO. 형식으로 패�
     client.publish(outTopicEachControl, msg,true);       
   }   
 }
+
+//받은 정보를 다시 json 형식으로 String 문자열을 만든다.
 String getAutoButtonState(JsonObject& root)
 {
   char msg[500];
@@ -281,7 +308,7 @@ String getAutoButtonState(JsonObject& root)
     sendRoot.printTo(msg);    
    return msg;
 }
-//min max 1 2 3 4  순서.
+//min max 1 2 3 4  순서. -- 문닫/문열 ->동작 정보를 개별로 저장한다
 void autoTempControl()
 { 
   char buf[5]={0};
@@ -301,12 +328,12 @@ void autoTempControl()
       if( curT <=   minT)
       {
         autoAction(1,"pinOff");  // 문 닫고.
-         button1 = "pinOff";
+         button1 = "pinOff";      //동작 정보를 개별로 저장한다
       }
       else if( curT >=  maxT)
       {
         autoAction(1,"pinOn");    //문 열고.
-         button1 = "pinOn";
+         button1 = "pinOn";        //동작 정보를 개별로 저장한다
       }
    }   
 
@@ -457,7 +484,7 @@ void autoTempControl()
         autoAction(12,"pinOn");    
         button12 = "pinOn";
        }
-  }      
+    }           
 }
 
 void autoAction(int orderPinNum ,String order)
@@ -482,7 +509,7 @@ void autoAction(int orderPinNum ,String order)
     digitalWrite(pin +1 , LOW);//+  
   }   
   else{
-    Serial.println("auto action --- ------------  line : 510");
+    Serial.println("auto action --- ------------  line : 488");
   } 
 }
 
@@ -494,11 +521,12 @@ void reconnect() {
     if (client.connect(ethernetClientName)) 
     {
   // Serial.println("connected");//---------------------------------------------   
-      client.subscribe("hagabi1dong/autoControlToTemp");
-      client.subscribe("hagabi1dong/autoControlToTempOff");
+      client.subscribe("hagabi1dong/autoControl");
+      client.subscribe("hagabi1dong/autoControlOff");
       client.subscribe("hagabi1dong/plusControl");
       client.subscribe("hagabi1dong/eachControl");   
       client.subscribe("hagabi1dong/currentTemp1");
+      client.subscribe("hagabi1dong/autoState"); // 단순 오토 유무만 주고 받음.
       client.subscribe("hagabi1dong/ping"); 
     }
     else 
@@ -689,7 +717,7 @@ void AllLOWSetDigitalWrite()
     digitalWrite(i, HIGH);       
   }
 }
-
+/*
 //클라이언트에 받은 값을 돌려 보낸다.
 void SendCommand(String msg)
 {
@@ -698,5 +726,5 @@ void SendCommand(String msg)
   client.publish(outTopic, cm,true);    
   free(cm);
 }
-
+*/
 
