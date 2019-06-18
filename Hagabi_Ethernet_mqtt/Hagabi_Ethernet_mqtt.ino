@@ -34,6 +34,7 @@ EthernetClient ethernetClient;
 PubSubClient client;
 
 const char* ethernetClientName = "hagabi1dong";  // 각 현장마다 다르게 한다.
+
 const char* serverIp = "119.205.235.214";
 const char* outTopic = "Hagabi/result";
 const char* outTopicEachControl = "Hagabi/1/eachControl"; //1동 제어  
@@ -106,7 +107,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       parsingAutoMessageOff(inString);
    else if(topics == "hagabi1dong/plusControl")
       parsingPlusMessage(inString);
-   else if(topics == "hagabi1dong/currentTemp1") // 1동의 온도 저장과  auto 온도 개폐제어를 주기적으로 한다(온도 받을때 마다.) [2]
+   else if(topics == "hagabi1dong/currentTempHumi") // 1동의 온도 저장과  auto 온도 개폐제어를 주기적으로 한다(온도 받을때 마다.) [2]
       parsingWorkTemp(inString);             
    else if(topics == "hagabi1dong/eachControl")// 개별 제어   
       parsingEachMessage(topics , inString);    
@@ -165,7 +166,7 @@ void inputIsAutoButtonState(JsonObject& root)
 
 }
 
-
+//각동의 정보를 저장한다.   %오토 상태라면 주기적으로 오토 제어 실행 역활을 한다.
 void parsingWorkTemp(String inString) // TODO. 패킷을 이형태로 만들어야 한다
 {
   StaticJsonBuffer<100> jsonBuffer;  // 용량이 적어서 줄여봤다.
