@@ -575,31 +575,48 @@ bool parseCommand(String buttonState ,int orderNum)
   Serial.print("orderNum : ");//-------------------------------------------------------------------------------------------
   Serial.println(orderNum); 
   
-  int pin = changeNum(orderNum); 
-  
-  if(buttonState.equalsIgnoreCase("pinOn"))
-  {   
-    digitalWrite(pin, LOW);  //+   
-    digitalWrite(pin + 1, HIGH); //-     
-    isActionOk = true;
-  }
-  else if(buttonState.equalsIgnoreCase("pinIdle") )
+   int pin = changeNum(orderNum); 
+
+  if(orderNum == 13 || orderNum == 14)
   {
-      digitalWrite(pin, HIGH);  // high로 해야 꺼짐상태가 됨.( % 켜짐(LOW도 꺼짐상태가 되나 장시간 사용으로 릴레이 수명이 단축된다)
-      digitalWrite(pin + 1, HIGH);  // high로 해야 꺼짐상태가 됨.( % 켜짐(LOW도 꺼짐상태가 되나 장시간 사용으로 릴레이 수명이 단축된다)
-      isActionOk = true;
+     if(buttonState.equalsIgnoreCase("pinOn"))
+      {   
+        digitalWrite(pin, LOW);  //+   켬.
+        isActionOk = true;
+      }
+      else if(buttonState.equalsIgnoreCase("pinOff"))
+      {   
+        digitalWrite(pin, HIGH);//-  끔      
+        isActionOk = true;
+      }
   }
-  else if(buttonState.equalsIgnoreCase("pinOff"))
-  {   
-    digitalWrite(pin, HIGH);//-   
-    digitalWrite(pin +1 , LOW);//+  
-    isActionOk = true;
-  }
-  else{
-    Serial.println("menualy -------line:612 ");
-    Serial.println(inString);
-    isActionOk = false;
+  else
+  {
+     if(buttonState.equalsIgnoreCase("pinOn"))
+      {   
+        digitalWrite(pin, LOW);  //+   
+        digitalWrite(pin + 1, HIGH); //-     
+        isActionOk = true;
+      }
+      else if(buttonState.equalsIgnoreCase("pinIdle") )
+      {
+          digitalWrite(pin, HIGH);  // high로 해야 꺼짐상태가 됨.( % 켜짐(LOW도 꺼짐상태가 되나 장시간 사용으로 릴레이 수명이 단축된다)
+          digitalWrite(pin + 1, HIGH);  // high로 해야 꺼짐상태가 됨.( % 켜짐(LOW도 꺼짐상태가 되나 장시간 사용으로 릴레이 수명이 단축된다)
+          isActionOk = true;
+      }
+      else if(buttonState.equalsIgnoreCase("pinOff"))
+      {   
+        digitalWrite(pin, HIGH);//-   
+        digitalWrite(pin +1 , LOW);//+  
+        isActionOk = true;
+      } 
+       else{
+        Serial.println("menualy -------line:612 ");
+        Serial.println(inString);
+        isActionOk = false;
+      }     
   } 
+  
 
   if(isActionOk)// 작동하고 결과를 각 버튼에 저장한다.
     setButtonValue(pin,buttonState); 
@@ -667,10 +684,10 @@ int changeNum(int orderNum)
     order = 42;
     else if(orderNum == 12 )
     order = 44;
-    else if(orderNum == 13 )
+    else if(orderNum == 13 ) //환풍기. - 홀수
     order = 46; 
-    else if(orderNum == 14 )
-    order = 48;      
+    else if(orderNum == 14 )//환풍기.-홀수 제어.
+    order = 47;      
     
     return order;
 }
