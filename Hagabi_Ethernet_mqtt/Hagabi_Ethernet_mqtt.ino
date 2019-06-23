@@ -43,6 +43,17 @@ const char* serverIp = "119.205.235.214";
 const char* outTopicEachControl = "Hagabi/2/eachControl"; //2동 제어  
 const char* outTopicPlusControl = "Hagabi/2/plusControl"; //2동 plus control
 const char* outTopicAutoControl = "Hagabi/2/autoControl"; //2동 auto control
+const char* outTopicAutoState = "hagabi2dong/autoState"; // 단순 오토 유무만 주고 받음.
+//reconnect 도 설정 꼭! 해라.
+/*
+const char* inputAutoControl = "hagabi2dong/autoControl";
+const char* inputAutoControlOff = "hagabi2dong/autoControlOff";
+const char* inputPlusControl = "hagabi2dong/plusControl";
+const char* inputEachControl = "hagabi2dong/eachControl";   
+ const char* inputCurrentTemp1= "hagabi2dong/currentTemp1";
+const char* inputAutoState = "hagabi2dong/autoState"; // 단순 오토 유무만 주고 받음.
+const char* inputPing = "hagabi2dong/ping"; 
+*/
 
 String sendMessage = "";
 String inString ="";
@@ -112,6 +123,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
       parsingWorkTemp(inString);             
    else if(topics == "hagabi2dong/eachControl")// 개별 제어   
       parsingEachMessage(topics , inString);    
+   else if(topics == "hagabi2dong/autoState")// 클라이언트가 시작하면서 오토 상태를 물어본다.
+      parsingAutoState(topics , inString);
    else
      Serial.println("unknown  massage --  line: 113");
 
@@ -232,7 +245,26 @@ void parsingAutoMessage(String inString)
     char* msgChar = msg.c_str();
     client.publish(outTopicAutoControl, msgChar,true);    
 }
+void parsingAutoState(String topics,String inString) // 클라이언트가 시작하면서 오토 상태인지 물어본다.
+{
+  StaticJsonBuffer<100> jsonBuffer;
+  JsonObject& root = jsonBuffer.parseObject(inString);   
 
+  char *s = root["AutoState"];
+  String requestMessage = s;
+
+  if(requestMessage == "getAutoState")
+  {       
+      char msg[100];
+      StaticJsonBuffer<100> sendjsonBuffer;
+      JsonObject& sendRoot = sendjsonBuffer.createObject();
+      sendRoot["AutoState"] =  isAutoTemp;
+      sendRoot.printTo(msg);    
+      
+      client.publish(outTopicAutoState, msg,true);   
+    
+  }
+}
 
 //스위치 한개씩 제어.
 void parsingEachMessage(String topics,String inString) //TODO. 형식으로 패킷만들어라 unity side: PacketEachControl
@@ -497,13 +529,13 @@ void reconnect() {
     if (client.connect(ethernetClientName)) 
     {
   // Serial.println("connected");//---------------------------------------------   
-      client.subscribe("hagabi1dong/autoControl");
-      client.subscribe("hagabi1dong/autoControlOff");
-      client.subscribe("hagabi1dong/plusControl");
-      client.subscribe("hagabi1dong/eachControl");   
-      client.subscribe("hagabi1dong/currentTemp1");
-      client.subscribe("hagabi1dong/autoState"); // 단순 오토 유무만 주고 받음.
-      client.subscribe("hagabi1dong/ping"); 
+      client.subscribe("hagabi2dong/autoControl");
+      client.subscribe("hagabi2dong/autoControlOff");
+      client.subscribe("hagabi2dong/plusControl");
+      client.subscribe("hagabi2dong/eachControl");   
+      client.subscribe("hagabi2dong/currentTemp1");
+      client.subscribe("hagabi2dong/autoState"); // 단순 오토 유무만 주고 받음.
+      client.subscribe("hagabi2dong/ping"); 
     }
     else 
     {
