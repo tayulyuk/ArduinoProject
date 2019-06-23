@@ -24,22 +24,25 @@ mega2560 -> 동작확인 mqtt.
 #include <Ethernet.h>
 #include <PubSubClient.h>
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+//byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEE };
 
 // Set the static IP address to use if the DHCP fails to assign
-IPAddress ip(192, 168, 0, 177);
-IPAddress myDns(192, 168, 0, 1);
+//IPAddress ip(192, 168, 0, 177);
+//IPAddress myDns(192, 168, 0, 1);
+IPAddress ip(192, 168, 0, 234);
+IPAddress myDns(192, 168, 0, 2);
 
 EthernetClient ethernetClient;
 PubSubClient client;
 
-const char* ethernetClientName = "hagabi1dong";  // 각 현장마다 다르게 한다.
+const char* ethernetClientName = "hagabi2dong";  // 2 동 / 현장마다 다르게 한다.
 
 const char* serverIp = "119.205.235.214";
 //const char* outTopic = "Hagabi/result";
-const char* outTopicEachControl = "Hagabi/1/eachControl"; //1동 제어  
-const char* outTopicPlusControl = "Hagabi/1/plusControl"; //1동 plus control
-const char* outTopicAutoControl = "Hagabi/1/autoControl"; //1동 auto control
+const char* outTopicEachControl = "Hagabi/2/eachControl"; //2동 제어  
+const char* outTopicPlusControl = "Hagabi/2/plusControl"; //2동 plus control
+const char* outTopicAutoControl = "Hagabi/2/autoControl"; //2동 auto control
 
 String sendMessage = "";
 String inString ="";
@@ -88,29 +91,29 @@ void parseCommand(String com);
 // 통신에서 문자가 들어오면 이 함수의 payload 배열에 저장된다.
 void callback(char* topic, byte* payload, unsigned int length) { 
  
-  //Serial.print("Message arrived [");   //---------------------------------------------
-  //Serial.print(topic);//------------------------------------------------------------------------ test 후 꼭 주석.
- // Serial.print("] ");//--------------------------------------------------
+  Serial.print("Message arrived [");   //---------------------------------------------
+  Serial.print(topic);//------------------------------------------------------------------------ test 후 꼭 주석.
+  Serial.print("] ");//--------------------------------------------------
 
 // payload로 들어온 문자를 정수로 바꾸기 위해 String inString에 저장후에 
   for (int i = 0; i < length; i++) {    
       inString += (char)payload[i];     
   } 
-  // Serial.print("order :");
- // Serial.println(inString);
+  Serial.print("order :");
+  Serial.println(inString);
    String topics = String(topic);
 
     // 오토 실행은 [1]/[2] 로 실행한다.
-   if(topics == "hagabi1dong/autoControl") //오토 켤때 사용
+   if(topics == "hagabi2dong/autoControl") //오토 켤때 사용
       parsingAutoMessage(inString); // 상태 저장 및 처음 오토 실행.[1]   
-   else if(topics == "hagabi1dong/plusControl")
+   else if(topics == "hagabi2dong/plusControl")
       parsingPlusMessage(inString);
-   else if(topics == "hagabi1dong/currentTempHumi") // 1동의 온도 저장과  auto 온도 개폐제어를 주기적으로 한다(온도 받을때 마다.) [2]
+   else if(topics == "hagabi2dong/currentTempHumi") // 2동의 온도 저장과  auto 온도 개폐제어를 주기적으로 한다(온도 받을때 마다.) [2]
       parsingWorkTemp(inString);             
-   else if(topics == "hagabi1dong/eachControl")// 개별 제어   
+   else if(topics == "hagabi2dong/eachControl")// 개별 제어   
       parsingEachMessage(topics , inString);    
    else
-     Serial.println("unknown  massage --  line: 145");
+     Serial.println("unknown  massage --  line: 113");
 
      inString = ""; //초기화.
 }
