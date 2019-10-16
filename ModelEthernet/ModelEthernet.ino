@@ -33,7 +33,7 @@ EthernetClient ethernetClient;
 PubSubClient client;
 
 String inString;
-const char* ethernetClientName = "ModelEthernet";  // 각 현장마다 다르게 한다.
+const char* ethernetClientName = "ModelEthernet33";  // 각 현장마다 다르게 한다.
 const char* serverIp = "119.205.235.214";
 
 

@@ -36,14 +36,14 @@ IPAddress myDns(192, 168, 0, 2);
 EthernetClient ethernetClient;
 PubSubClient client;
 
-const char* ethernetClientName = "hagabi2dong";  // 2 동 / 현장마다 다르게 한다.
+const char* ethernetClientName = "hagabi3dong";  // 3 동 / 현장마다 다르게 한다.
 
 const char* serverIp = "119.205.235.214";
 //const char* outTopic = "Hagabi/result";
-const char* outTopicEachControl = "Hagabi/2/eachControl"; //2동 제어  
-const char* outTopicPlusControl = "Hagabi/2/plusControl"; //2동 plus control
-const char* outTopicAutoControl = "Hagabi/2/autoControl"; //2동 auto control
-const char* outTopicAutoState = "hagabi2dong/autoState"; // 단순 오토 유무만 주고 받음.
+const char* outTopicEachControl = "Hagabi/3/eachControl"; //3동 제어  
+const char* outTopicPlusControl = "Hagabi/3/plusControl"; //3동 plus control
+const char* outTopicAutoControl = "Hagabi/3/autoControl"; //3동 auto control
+const char* outTopicAutoState = "hagabi3dong/autoState"; // 단순 오토 유무만 주고 받음.
 //reconnect 도 설정 꼭! 해라.
 /*
 const char* inputAutoControl = "hagabi2dong/autoControl";
@@ -115,18 +115,18 @@ void callback(char* topic, byte* payload, unsigned int length) {
    String topics = String(topic);
 
     // 오토 실행은 [1]/[2] 로 실행한다.
-   if(topics == "hagabi2dong/autoControl") //오토 켤때 사용
+   if(topics == "hagabi3dong/autoControl") //오토 켤때 사용
       parsingAutoMessage(inString); // 상태 저장 및 처음 오토 실행.[1]   
-   else if(topics == "hagabi2dong/plusControl")
+   else if(topics == "hagabi3dong/plusControl")
       parsingPlusMessage(inString);
-   else if(topics == "hagabi2dong/currentTempHumi") // 2동의 온도 저장과  auto 온도 개폐제어를 주기적으로 한다(온도 받을때 마다.) [2]
+   else if(topics == "hagabi3dong/currentTempHumi") // 2동의 온도 저장과  auto 온도 개폐제어를 주기적으로 한다(온도 받을때 마다.) [2]
       parsingWorkTemp(inString);             
-   else if(topics == "hagabi2dong/eachControl")// 개별 제어   
+   else if(topics == "hagabi3dong/eachControl")// 개별 제어   
       parsingEachMessage(topics , inString);    
-   else if(topics == "hagabi2dong/autoState")// 클라이언트가 시작하면서 오토 상태를 물어본다.
+   else if(topics == "hagabi3dong/autoState")// 클라이언트가 시작하면서 오토 상태를 물어본다.
       parsingAutoState(topics , inString);
    else
-     Serial.println("unknown  massage --  line: 113");
+     Serial.println("unknown  massage --  line: 129");
 
      inString = ""; //초기화.
 }
@@ -529,13 +529,13 @@ void reconnect() {
     if (client.connect(ethernetClientName)) 
     {
   // Serial.println("connected");//---------------------------------------------   
-      client.subscribe("hagabi2dong/autoControl");
-      client.subscribe("hagabi2dong/autoControlOff");
-      client.subscribe("hagabi2dong/plusControl");
-      client.subscribe("hagabi2dong/eachControl");   
-      client.subscribe("hagabi2dong/currentTemp1");
-      client.subscribe("hagabi2dong/autoState"); // 단순 오토 유무만 주고 받음.
-      client.subscribe("hagabi2dong/ping"); 
+      client.subscribe("hagabi3dong/autoControl");
+      client.subscribe("hagabi3dong/autoControlOff");
+      client.subscribe("hagabi3dong/plusControl");
+      client.subscribe("hagabi3dong/eachControl");   
+      client.subscribe("hagabi3dong/currentTemp1");
+      client.subscribe("hagabi3dong/autoState"); // 단순 오토 유무만 주고 받음.
+      client.subscribe("hagabi3dong/ping"); 
     }
     else 
     {
@@ -752,4 +752,3 @@ void SendCommand(String msg)
   free(cm);
 }
 */
-
