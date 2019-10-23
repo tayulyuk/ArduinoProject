@@ -39,7 +39,7 @@ EthernetClient ethernetClient;
 PubSubClient client;
 
 //const char* ethernetClientName = "Moter4_01087700060";  // 각 현장마다 다르게 한다.
-const char* ethernetClientName = "testHagabi_moter";  // 각 현장마다 다르게 한다.
+const char* ethernetClientName = "testHagabi_5 -moter";  // 각 현장마다 다르게 한다.
 
 const char* serverIp = "119.205.235.214";
 
