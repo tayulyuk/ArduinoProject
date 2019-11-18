@@ -13,9 +13,9 @@ const char* mqtt_server = "119.205.235.214"; //브로커 주소
 
 //const int sleepSeconds = 300; //to save power i send the ESP to sleep
 
-const char* outTopic = "1029931969033/temp1"; // 밖으로 내보내는 토픽.
-const char* clientName = "1029931969033";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
-const char* setWifiManagerName = "Auto_Model_Temp_Humi_Connect_AP";
+const char* outTopic = "sft/hagabi/3/TempHumi1"; // 밖으로 내보내는 토픽.
+const char* clientName = "hagabi-3-temphumi_1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+const char* setWifiManagerName = "Hagabi_3_TempHumi_1";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -106,7 +106,8 @@ delay(3000);
     dtostrf(t,4,2,temp);    
   }
     //다시 클라이언트로 현재의 버튼 상황을 보낸다. & mqtt서버에 마지막 정보를 또한 저장된다. 항상클라이언트는 마지막 정보를 받는다.
-      sprintf(msg,"|Temp=%s|Humi=%s|",temp,humi);  
+     // sprintf(msg,"|Temp=%s|Humi=%s|",temp,humi);  
+      sprintf(msg,"%s&%s",temp,humi);  
       
     Serial.println(msg);   
      
@@ -143,5 +144,3 @@ void loop()
   }
 
 }
-
-
