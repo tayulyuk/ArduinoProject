@@ -13,9 +13,12 @@ const char* mqtt_server = "119.205.235.214"; //브로커 주소
 
 //const int sleepSeconds = 300; //to save power i send the ESP to sleep
 
-const char* outTopic = "sft/hagabi/3/TempHumi1"; // 밖으로 내보내는 토픽.
-const char* clientName = "hagabi-3-temphumi_1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
-const char* setWifiManagerName = "Hagabi_3_TempHumi_1";
+//const char* outTopic = "sft/hagabi/3/TempHumi1"; // 밖으로 내보내는 토픽.
+//const char* clientName = "hagabi-3-temphumi_1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+//const char* setWifiManagerName = "Hagabi_3_TempHumi_1";
+const char* outTopic = "sft/hagabi/1/TempHumi1"; // 밖으로 내보내는 토픽.
+const char* clientName = "hagabi-1-temphumi_1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+const char* setWifiManagerName = "Hagabi_1_TempHumi_1";
 
 WiFiClient espClient;
 PubSubClient client(espClient);

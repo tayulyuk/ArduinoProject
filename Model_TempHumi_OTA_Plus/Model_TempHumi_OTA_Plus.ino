@@ -15,12 +15,16 @@
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 
 const char* mqtt_server = "119.205.235.214"; //브로커 주소
-const char* outTopic = "1029931969033/temp1"; // 밖으로 내보내는 토픽.
+//const char* outTopic = "1029931969033/temp1"; // 밖으로 내보내는 토픽.
 //ModelTempHumi/result
 //1029931969033/temp1
-const char* clientName = "1029931969033Temp1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+//const char* clientName = "1029931969033Temp1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
 //hagabi3class
-const char* setWifiManagerName = "Auto_1029931969033_AP";
+//const char* setWifiManagerName = "Auto_1029931969033_AP";
+
+const char* outTopic = "sft/hagabi/1/TempHumi1"; // 밖으로 내보내는 토픽.
+const char* clientName = "hagabi-1-temphumi_1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+const char* setWifiManagerName = "Hagabi_1_TempHumi_1";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -186,5 +190,3 @@ void loop()
   //OTA
   ArduinoOTA.handle();
 }
-
-
