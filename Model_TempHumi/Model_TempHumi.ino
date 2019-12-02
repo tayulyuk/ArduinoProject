@@ -13,12 +13,12 @@ const char* mqtt_server = "119.205.235.214"; //브로커 주소
 
 //const int sleepSeconds = 300; //to save power i send the ESP to sleep
 
-//const char* outTopic = "sft/hagabi/3/TempHumi1"; // 밖으로 내보내는 토픽.
-//const char* clientName = "hagabi-3-temphumi_1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
-//const char* setWifiManagerName = "Hagabi_3_TempHumi_1";
-const char* outTopic = "sft/hagabi/1/TempHumi1"; // 밖으로 내보내는 토픽.
-const char* clientName = "hagabi-1-temphumi_1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
-const char* setWifiManagerName = "Hagabi_1_TempHumi_1";
+const char* outTopic = "sft/hagabi/3/TempHumi1"; // 밖으로 내보내는 토픽.
+const char* clientName = "hagabi-3-temphumi_1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+const char* setWifiManagerName = "Hagabi_3_TempHumi_1";
+//const char* outTopic = "sft/hagabi/2/TempHumi1"; // 밖으로 내보내는 토픽.
+//const char* clientName = "hagabi-2-temphumi_1";  // 다음 이름이 중복되지 않게 꼭 수정 바람 - 생년월일 추천
+//const char* setWifiManagerName = "Hagabi_2_TempHumi_1";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -45,9 +45,14 @@ DHT dht(DHTPIN, DHTTYPE);
  
 void setup() 
 {
+  startEthernetSetting();
+} 
+
+void startEthernetSetting()
+{
   Serial.begin(115200);
  
- dht.begin();   
+  dht.begin();   
  
   pinMode(D0, WAKEUP_PULLUP);
 
@@ -57,8 +62,7 @@ void setup()
   delay(50);
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-
-} 
+}
 
 // 통신에서 문자가 들어오면 이 함수의 payload 배열에 저장된다.
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -85,6 +89,8 @@ void reconnect() {
       Serial.println(" try again in 5 seconds");
       // Wait 1 seconds before retrying
       delay(5000);
+      //재접속
+      startEthernetSetting();
     }
   }
 }
