@@ -586,7 +586,7 @@ void setup() {
    //pin settings
     AllSetOutPutMode();  
     //일단 HIGH 모드로 모두 끄고 시작한다.
-    AllLOWSetDigitalWrite();
+    AllHIGHSetDigitalWrite();
   
     startEthernetSetting();
 }
@@ -735,7 +735,7 @@ void AllSetOutPutMode()
   }
 }
 
-void AllLOWSetDigitalWrite()
+void AllHIGHSetDigitalWrite()
 {
   for(int i = 22; i <= 49 ; i++)
   {     

@@ -35,20 +35,15 @@ String url="";
 #define DHTTYPE DHT21
  
 DHT dht(DHTPIN, DHTTYPE);
-//WiFiClient client;
+//WiFiClient wifiClient;
 
  String inString;
  String topis;
 
  long interval = 30000; 
  long lastMsg = 0;
- 
-void setup() 
-{
-  startEthernetSetting();
-} 
 
-void startEthernetSetting()
+ void startEthernetSetting()
 {
   Serial.begin(115200);
  
@@ -64,6 +59,12 @@ void startEthernetSetting()
   client.setCallback(callback);
 }
 
+ 
+void setup() 
+{
+  startEthernetSetting();
+} 
+
 // 통신에서 문자가 들어오면 이 함수의 payload 배열에 저장된다.
 void callback(char* topic, byte* payload, unsigned int length) {
  
@@ -76,22 +77,17 @@ void reconnect() {
  //   Serial.print("Attempting MQTT connection...");
     // Attempt to connect
     if (client.connect(clientName)) {
-      /*
-//      Serial.println("connected");
-      // Once connected, publish an announcement...
-//      client.publish(outTopic, "Reconnected");    
-//     client.subscribe("ModelTempHumi/PleaseTempHumi");    
-        */
+     
         // 이공간은 절대 비워둬라.
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
+      Serial.println(" try again in 3 seconds");
       // Wait 1 seconds before retrying
-      delay(5000);
+      delay(3000);
       //재접속
-      startEthernetSetting();
-    }
+   
+    }    
   }
 }
 
@@ -141,8 +137,8 @@ void loop()
   if (!client.connected()) { // MQTT
     reconnect();
   }
-  client.loop();
 
+  client.loop();
 
   unsigned long now = millis();
  

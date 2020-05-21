@@ -385,7 +385,7 @@ void setup() {
    //pin settings
     AllSetOutPutMode();  
     //일단 HIGH 모드로 모두 끄고 시작한다.
-    AllLOWSetDigitalWrite();
+    AllHIGHSetDigitalWrite();
   
     startEthernetSetting();
 }
@@ -459,7 +459,8 @@ void AllSetOutPutMode()
   }
 }
 
-void AllLOWSetDigitalWrite()
+//HIGH -> 해야 전력이 안들어간 생태가 된다.
+void AllHIGHSetDigitalWrite()
 {
   for(int i = 40; i <= 47 ; i++)
   {     
@@ -475,5 +476,3 @@ void SendCommand(String msg)
   client.publish(outTopic, cm,true);    
   free(cm);
 }
-
-
